@@ -1,2 +1,3 @@
 # botniklas
-A small, efficient IRC bot
+
+A small, efficient IRC bot.
