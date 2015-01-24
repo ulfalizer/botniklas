@@ -5,7 +5,7 @@
 #include "msg_write_buf.h"
 #include "options.h"
 
-#define INVALID_MSG(s)                            \
+#define RET_INVALID_MSG(s)                        \
   do {                                            \
       warning("ignoring invalid message: %s", s); \
                                                   \
@@ -25,10 +25,10 @@ static bool extract_msg_prefix(char **cur, char **prefix) {
             ++*cur;
 
         if (**cur == '\0')
-            INVALID_MSG("missing command after prefix");
+            RET_INVALID_MSG("missing command after prefix");
 
         if (*prefix == *cur - 1)
-            INVALID_MSG("empty prefix");
+            RET_INVALID_MSG("empty prefix");
 
         // Overwrite space.
         *(*cur)++ = '\0';
@@ -47,7 +47,7 @@ static bool extract_msg_cmd(char **cur, char **cmd) {
         ++*cur;
 
     if (*cmd == *cur)
-        INVALID_MSG("empty command");
+        RET_INVALID_MSG("empty command");
 
     return true;
 }
@@ -59,19 +59,19 @@ static bool extract_msg_params(char *cur, char *params[], size_t *n_params) {
 
     while (*cur != '\0') {
         if (*n_params >= MAX_PARAMS)
-            INVALID_MSG("too many parameters");
+            RET_INVALID_MSG("too many parameters");
 
         // Overwrite space.
         *cur++ = '\0';
 
         if (*cur == ' ' || *cur == '\0')
-            INVALID_MSG("empty parameter");
+            RET_INVALID_MSG("empty parameter");
 
         if (*cur == ':') {
             // Final parameter, possibly containing spaces.
 
             if (*++cur == '\0')
-                INVALID_MSG("empty last parameter");
+                RET_INVALID_MSG("empty last parameter");
 
             params[(*n_params)++] = cur;
 
