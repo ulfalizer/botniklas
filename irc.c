@@ -21,16 +21,17 @@ static bool extract_msg_prefix(char **cur, char **prefix) {
     else {
         *prefix = ++*cur;
 
-        while (**cur != ' ' && *cur != '\0')
+        // Move past prefix.
+        while (**cur != ' ' && **cur != '\0')
             ++*cur;
+
+        if (*prefix == *cur)
+            RET_INVALID_MSG("empty prefix");
 
         if (**cur == '\0')
             RET_INVALID_MSG("missing command after prefix");
 
-        if (*prefix == *cur - 1)
-            RET_INVALID_MSG("empty prefix");
-
-        // Overwrite space.
+        assert(**cur == ' ');
         *(*cur)++ = '\0';
     }
 
@@ -61,7 +62,7 @@ static bool extract_msg_params(char *cur, char *params[], size_t *n_params) {
         if (*n_params + 1 > MAX_PARAMS)
             RET_INVALID_MSG("too many parameters");
 
-        // Overwrite space.
+        assert(*cur == ' ');
         *cur++ = '\0';
 
         if (*cur == ' ' || *cur == '\0')
