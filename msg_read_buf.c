@@ -62,7 +62,6 @@ void msg_read_buf_free() {
 }
 
 static void assert_index_sanity() {
-    assert(start <= 2*page_size);
     assert(end <= 2*page_size);
     assert(start <= end);
     assert(end - start <= page_size);
