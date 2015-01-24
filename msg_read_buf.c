@@ -62,8 +62,9 @@ void msg_read_buf_free() {
 }
 
 static void assert_index_sanity() {
-    assert(start <= end);
+    assert(start <= 2*page_size);
     assert(end <= 2*page_size);
+    assert(start <= end);
     assert(end - start <= page_size);
 }
 
@@ -73,7 +74,6 @@ static void adjust_indices() {
         start -= page_size;
         end -= page_size;
     }
-    assert(start <= page_size);
 }
 
 // Called to fetch more data from the socket (when we have not seen a complete
