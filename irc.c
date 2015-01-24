@@ -58,7 +58,7 @@ static bool extract_msg_params(char *cur, char *params[], size_t *n_params) {
     *n_params = 0;
 
     while (*cur != '\0') {
-        if (*n_params >= MAX_PARAMS)
+        if (*n_params + 1 > MAX_PARAMS)
             RET_INVALID_MSG("too many parameters");
 
         // Overwrite space.
