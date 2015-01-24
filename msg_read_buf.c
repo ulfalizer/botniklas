@@ -7,6 +7,7 @@
 // system headers.
 #define _GNU_SOURCE
 #include "common.h"
+#include "msg_read_buf.h"
 
 #include <sys/mman.h>
 
