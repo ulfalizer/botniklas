@@ -12,8 +12,11 @@
 #include <sys/mman.h>
 
 static char *buf;
-// 'start' is always <= 'end'. When 'start' reaches the second page, we
-// subtract the page size from both indices.
+// The buffer contents is stored in the index range [start,end[.
+//
+// 'start' is always <= 'end'. When 'start' > 'page_size', we subtract the page
+// size from both indices. This guarantees that a contiguous chunk of
+// 'page_size' bytes starting at 'start' can be safely accessed.
 static size_t start;
 static size_t end;
 static long page_size;
@@ -58,17 +61,27 @@ void msg_read_buf_free() {
         err("munmap (message read buffer)");
 }
 
+static void assert_index_sanity() {
+    assert(start <= end);
+    assert(end <= 2*page_size);
+    assert(end - start <= page_size);
+}
+
 static void adjust_indices() {
+    assert_index_sanity();
     if (start > page_size) {
         start -= page_size;
         end -= page_size;
     }
+    assert(start <= page_size);
 }
 
 // Called to fetch more data from the socket (when we have not seen a complete
 // message yet).
 static void read_more(int fd) {
     ssize_t n_recv;
+
+    assert_index_sanity();
 
     // Buffer full?
     if (end - start == page_size)
@@ -86,13 +99,12 @@ again:
     }
 
     end += n_recv;
+    assert_index_sanity();
 }
 
 char *read_msg(int fd) {
     bool has_null_bytes = false;
     size_t msg_start;
-
-    assert(start <= end);
 
     adjust_indices();
     // Must be set after a possible index adjustment.
