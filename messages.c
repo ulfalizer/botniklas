@@ -36,6 +36,7 @@ static void handle_welcome(int serv_fd, IRC_msg *msg) {
 static bool check_for_error_reply(IRC_msg *msg) {
     if (isdigit(msg->cmd[0]) && isdigit(msg->cmd[1]) && isdigit(msg->cmd[2]) &&
         msg->cmd[3] == '\0') {
+
         unsigned val = 100*(msg->cmd[0] - '0') + 10*(msg->cmd[1] - '0') +
                        (msg->cmd[2] - '0');
 

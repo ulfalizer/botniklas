@@ -17,6 +17,6 @@ void msg_begin();
 void msg_append(const char *format, ...)
   __attribute__((format(printf, 1, 2)));
 
-// Writes the message from the buffer to 'fd'. "\r\n" is appended
+// Writes the IRC message from the buffer to 'fd'. "\r\n" is appended
 // automatically.
 void msg_send(int fd);

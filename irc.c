@@ -1,6 +1,7 @@
 #include "common.h"
 #include "irc.h"
 #include "messages.h"
+#include "msg_read_buf.h"
 #include "msg_write_buf.h"
 #include "options.h"
 
@@ -11,46 +12,6 @@
       return false;                               \
   }                                               \
   while (false)
-
-// Reads an IRC message terminated by '\r' or '\n' into 'msg_buf'. Replaces the
-// final '\r' or '\n' with '\0' for ease of further processing. Returns false
-// if the message is empty or contains nulls. Exits the program if
-// 'max_msg_len' is exceeded.
-static bool read_msg(int serv_fd, char *msg_buf, size_t max_msg_len) {
-    bool has_null_bytes = false;
-
-    for (char *cur = msg_buf; cur - msg_buf + 1 <= max_msg_len; ++cur) {
-        ssize_t n_read = readn(serv_fd, cur, 1);
-
-        if (n_read == 0)
-            fail("EOF from server");
-
-        switch (*cur) {
-        case '\r': case '\n':
-            if (has_null_bytes) {
-                warning("ignoring invalid message containing null bytes: '%.*s'",
-                        (int)(cur - msg_buf), msg_buf);
-
-                return false;
-            }
-
-            // Treat empty messages as invalid.
-            if (cur == msg_buf)
-                return false;
-
-            // null-terminate the message for ease of further processing.
-            *cur = '\0';
-
-            return true;
-
-        case '\0':
-            has_null_bytes = true;
-        }
-    }
-
-    fail("received message longer than max_msg_len (%zu)",
-         max_msg_len);
-}
 
 // Extracts the prefix (if any) from the message starting at 'cur', updating
 // 'cur' to point just past it. Returns false if the prefix is malformed.
@@ -147,10 +108,11 @@ static bool split_msg(char *msg_buf, IRC_msg *msg) {
 
 void process_next_msg(int serv_fd) {
     IRC_msg msg;
-    char msg_buf[MAX_MSG_LEN];
+    char *msg_buf;
 
 skip_msg:
-    if (!read_msg(serv_fd, msg_buf, sizeof msg_buf))
+    msg_buf = read_msg(serv_fd);
+    if (msg_buf == NULL)
         goto skip_msg;
 
     if (trace_msgs)
