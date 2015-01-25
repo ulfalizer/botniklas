@@ -19,12 +19,13 @@ static size_t end;
 static long page_size;
 
 static void test_mirroring() {
-    // Small sanity check.
+    // Sanity check. Initialize one mirror and verify contents of the other.
 
-    buf[0] = 1;
-    buf[2*page_size - 1] = 2;
-    if (buf[page_size] != 1 || buf[page_size - 1] != 2)
-        fail("message read buffer: memory mirror is broken");
+    for (long i = 0; i < page_size; ++i)
+        buf[i] = i % 10;
+    for (long i = 0; i < page_size; ++i)
+        if (buf[page_size + i] != i % 10)
+            fail("message read buffer: memory mirror is broken");
 }
 
 // An alternative approach in this function would be to use remap_file_pages()
