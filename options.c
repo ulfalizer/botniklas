@@ -48,7 +48,7 @@ void process_cmdline(int argc, char *argv[]) {
     while ((opt = getopt(argc, argv, ":c:hn:p:r:tu:")) != -1)
         switch (opt) {
         case 'c': channel = optarg; break;
-        case 'h': print_usage(argv, stdout); exit(0);
+        case 'h': print_usage(argv, stdout); exit(EXIT_SUCCESS);
         case 'n': nick = optarg; break;
         case 'p': port = optarg; break;
         case 'r': realname = optarg; break;
@@ -58,19 +58,19 @@ void process_cmdline(int argc, char *argv[]) {
         case '?':
             fprintf(stderr, "unknown flag '-%c'.\n\n", optopt);
             print_usage(argv, stderr);
-            exit(1);
+            exit(EXIT_FAILURE);
 
         case ':':
             fprintf(stderr, "missing argument to '-%c'.\n\n", optopt);
             print_usage(argv, stderr);
-            exit(1);
+            exit(EXIT_FAILURE);
         }
 
     if (argc - optind != 1) {
         fputs("expected a single non-flag argument (the IRC server).\n\n",
               stderr);
         print_usage(argv, stderr);
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     server = argv[optind];
