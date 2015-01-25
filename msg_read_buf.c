@@ -140,37 +140,42 @@ again:
 
 char *read_msg(int fd) {
     bool has_null_bytes = false;
-    size_t msg_start;
+    size_t cur;
 
     adjust_indices();
     // Must be set after a possible index adjustment.
-    msg_start = start;
+    cur = start;
 
     for (;; read_more(fd))
-        for (; start < end; ++start)
-            switch (buf[start]) {
+        for (; cur < end; ++cur)
+            switch (buf[cur]) {
             case '\r': case '\n':
                 if (has_null_bytes) {
                     warning("ignoring invalid message containing null bytes: "
-                            "'%.*s'", (int)(start - msg_start), buf + msg_start);
-                    ++start;
+                            "'%.*s'", (int)(cur - start), buf + start);
 
-                    return NULL;
+                    goto invalid_msg;
                 }
 
                 // Treat empty messages as invalid.
-                if (start == msg_start) {
-                    ++start;
-
-                    return NULL;
-                }
+                if (cur == start)
+                    goto invalid_msg;
 
                 // null-terminate the message for ease of further processing.
-                buf[start++] = '\0';
+                buf[cur] = '\0';
 
-                return buf + msg_start;
+                char *res = buf + start;
+                // New start is after the message.
+                start = cur + 1;
+
+                return res;
 
             case '\0':
                 has_null_bytes = true;
             }
+
+invalid_msg:
+    start = cur + 1;
+
+    return NULL;
 }
