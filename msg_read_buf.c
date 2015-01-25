@@ -41,7 +41,7 @@ static void set_up_mirroring() {
     if (page_size == -1)
         err("sysconf(_SC_PAGESIZE) (message read buffer)");
     // Enforce at least the limit from RFC 2812. Could be generalized to allow
-    // a maximum length to be specified with the numer of pages automatically
+    // a maximum length to be specified with the number of pages automatically
     // deduced.
     if (page_size < 512)
         fail("message read buffer: page size too small (%lu bytes)\n",
