@@ -8,6 +8,7 @@ extern const char *username;
 
 // If true, a trace of all messages received from the server is printed to
 // stdout.
+extern bool exit_on_invalid_msg;
 extern bool trace_msgs;
 
 void process_cmdline(int argc, char *argv[]);

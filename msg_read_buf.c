@@ -5,6 +5,7 @@
 
 #include "common.h"
 #include "msg_read_buf.h"
+#include "options.h"
 
 #include <sys/mman.h>
 
@@ -153,6 +154,9 @@ char *read_msg(int fd) {
                 if (has_null_bytes) {
                     warning("ignoring invalid message containing null bytes: "
                             "'%.*s'", (int)(cur - start), buf + start);
+
+                    if (exit_on_invalid_msg)
+                        exit(EXIT_FAILURE);
 
                     goto invalid_msg;
                 }

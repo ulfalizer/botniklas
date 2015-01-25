@@ -9,6 +9,9 @@
   do {                                            \
       warning("ignoring invalid message: %s", s); \
                                                   \
+      if (exit_on_invalid_msg)                    \
+          exit(EXIT_FAILURE);                     \
+                                                  \
       return false;                               \
   }                                               \
   while (false)

@@ -16,6 +16,7 @@ const char *realname = REALNAME_DEFAULT;
 const char *server;
 const char *username = USERNAME_DEFAULT;
 
+bool exit_on_invalid_msg = false;
 bool trace_msgs = false;
 
 static void print_usage(char *argv[], FILE *stream) {
@@ -28,6 +29,8 @@ static void print_usage(char *argv[], FILE *stream) {
             "  -c <channel to join> (default: \""CHANNEL_DEFAULT"\")\n"
             "     The channel name might have to be quoted to avoid\n"
             "     interpretation of '#' as the start of a comment.\n"
+            "  -e  Exit the process when an invalid message is\n"
+            "      received. Debugging helper.\n"
             "  -h  Print this usage message to stdout and exit. Other\n"
             "      arguments are ignored.\n"
             "  -n <nick to use> (default: \""NICK_DEFAULT"\")\n"
@@ -45,9 +48,10 @@ void process_cmdline(int argc, char *argv[]) {
     // Print errors ourself.
     opterr = 0;
 
-    while ((opt = getopt(argc, argv, ":c:hn:p:r:tu:")) != -1)
+    while ((opt = getopt(argc, argv, ":c:ehn:p:r:tu:")) != -1)
         switch (opt) {
         case 'c': channel = optarg; break;
+        case 'e': exit_on_invalid_msg = true; break;
         case 'h': print_usage(argv, stdout); exit(EXIT_SUCCESS);
         case 'n': nick = optarg; break;
         case 'p': port = optarg; break;
