@@ -35,7 +35,7 @@ static void test_mirroring() {
 static void set_up_mirroring() {
     int fd;
     // Assume this gives us an in-memory fs.
-    char tmp_file_path[] = "/dev/shm/botniklas-ring-buffer-XXXXXX";
+    static char tmp_file_path[] = "/dev/shm/botniklas-ring-buffer-XXXXXX";
 
     page_size = sysconf(_SC_PAGESIZE);
     if (page_size == -1)
