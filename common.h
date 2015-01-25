@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <ctype.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <inttypes.h>
 #include <limits.h>
 #include <math.h>
@@ -16,6 +17,8 @@
 #include <stdlib.h>
 #include <stdnoreturn.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 // Exits unsuccessfully with a message to stderr.

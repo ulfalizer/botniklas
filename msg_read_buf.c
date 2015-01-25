@@ -3,9 +3,6 @@
 // and to always return messages in contiguous chunks, even in case of
 // "wraparound".
 
-// For remap_file_pages() from <sys/mman.h>. Must be set before including other
-// system headers.
-#define _GNU_SOURCE
 #include "common.h"
 #include "msg_read_buf.h"
 
@@ -21,14 +18,27 @@ static size_t start;
 static size_t end;
 static long page_size;
 
-void msg_read_buf_init() {
+static void test_mirroring() {
+    // Small sanity check.
+
+    buf[0] = 1;
+    buf[2*page_size - 1] = 2;
+    if (buf[page_size] != 1 || buf[page_size - 1] != 2)
+        fail("message read buffer: memory mirror is broken");
+}
+
+// An alternative approach in this function would be to use remap_file_pages()
+// (like in old versions), which is a bit cleaner as we do not have to touch
+// the filesystem. Unfortunately it's unsupported by Valgrind and also
+// deprecated.
+static void set_up_mirroring() {
+    int fd;
+    // Assume this gives us an in-memory fs.
+    char tmp_file_path[] = "/dev/shm/botniklas-ring-buffer-XXXXXX";
+
     page_size = sysconf(_SC_PAGESIZE);
     if (page_size == -1)
         err("sysconf(_SC_PAGESIZE) (message read buffer)");
-
-    start = 0;
-    end = 0;
-
     // Enforce at least the limit from RFC 2812. Could be generalized to allow
     // a maximum length to be specified with the numer of pages automatically
     // deduced.
@@ -36,24 +46,50 @@ void msg_read_buf_init() {
         fail("message read buffer: page size too small (%lu bytes)\n",
              page_size);
 
-    // Set up two mirrored memory pages next to each other.
-
-    buf = mmap(NULL, 2*page_size, PROT_READ | PROT_WRITE,
-               MAP_ANONYMOUS | MAP_SHARED, -1, 0);
+    // Create a dummy mapping to reserve a contiguous chunk of memory addresses
+    // for the ring buffer. It is completely over-mapped below, which according
+    // to POSIX frees it.
+    buf = mmap(NULL, 2*page_size, PROT_NONE,
+               MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
     if (buf == MAP_FAILED)
-        err("mmap (message read buffer)");
+        err("mmap setup (message read buffer)");
 
-    // TODO: valgrind does not implement remap_file_pages(), and it has also
-    // been deprecated. Should use a different approach to set up the mirror.
-    if (remap_file_pages(buf, page_size, 0, 1, 0) == -1)
-        err("remap_file_pages (message read buffer)");
+    // Create a dummy file to hold the page that is mirrored below.
 
-    // Small mirroring test.
+    fd = mkstemp(tmp_file_path);
+    if (fd == -1)
+        err("mkstemp (message read buffer)");
 
-    buf[0] = 1;
-    buf[2*page_size - 1] = 2;
-    if (buf[page_size] != 1 || buf[page_size - 1] != 2)
-        fail("message read buffer: memory mirror is broken");
+    if (unlink(tmp_file_path) == -1)
+        err("unlink (message read buffer)");
+
+    // The mapped page must actually exist in the file. Otherwise we'll get a
+    // SIGBUS when trying to access it.
+    if (ftruncate(fd, page_size) == -1)
+        err("ftruncate (message read buffer)");
+
+    // Set up mirroring by mapping the page to two consecutive pages. This
+    // needs MAP_SHARED to work.
+
+    if (mmap(buf, page_size, PROT_READ | PROT_WRITE,
+             MAP_FIXED | MAP_SHARED, fd, 0) == MAP_FAILED)
+        err("mmap first (message read buffer)");
+
+    if (mmap(buf + page_size, page_size, PROT_READ | PROT_WRITE,
+             MAP_FIXED | MAP_SHARED, fd, 0) == MAP_FAILED)
+        err("mmap second (message read buffer)");
+
+    if (close(fd) == -1)
+        err("close (message read buffer)");
+
+    test_mirroring();
+}
+
+void msg_read_buf_init() {
+    set_up_mirroring();
+
+    start = 0;
+    end = 0;
 }
 
 void msg_read_buf_free() {
