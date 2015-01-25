@@ -175,6 +175,7 @@ char *read_msg(int fd) {
             }
 
 invalid_msg:
+    // New start is after the message.
     start = cur + 1;
 
     return NULL;
