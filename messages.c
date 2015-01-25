@@ -77,6 +77,9 @@ void handle_msg(int serv_fd, IRC_msg *msg) {
                 warning("ignoring %s with %zu parameters (expected %zu)",
                         msg->cmd, msg->n_params, msgs[i].n_params_expected);
 
+                if (exit_on_invalid_msg)
+                    exit(EXIT_FAILURE);
+
                 break;
             }
 
