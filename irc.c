@@ -72,12 +72,8 @@ static bool extract_msg_params(char *cur, char *params[], size_t *n_params) {
             RET_INVALID_MSG("empty parameter");
 
         if (*cur == ':') {
-            // Final parameter, possibly containing spaces.
-
-            if (*++cur == '\0')
-                RET_INVALID_MSG("empty last parameter");
-
-            params[(*n_params)++] = cur;
+            // Final parameter. Can be empty or contain spaces.
+            params[(*n_params)++] = ++cur;
 
             break;
         }
