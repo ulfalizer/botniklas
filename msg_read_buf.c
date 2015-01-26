@@ -98,7 +98,7 @@ void msg_read_buf_init() {
 }
 
 void msg_read_buf_free() {
-    if (munmap(buf, 2*page_size) == -1)
+    if (munmap(buf, 4*page_size) == -1)
         err("munmap (message read buffer)");
 }
 
