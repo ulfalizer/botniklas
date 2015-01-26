@@ -132,6 +132,9 @@ static void read_more(int fd) {
 again:
     n_recv = recv(fd, buf + end, page_size - (end - start), 0);
 
+    if (n_recv == 0)
+        fail("connection closed by server");
+
     if (n_recv == -1) {
         if (errno == EINTR)
             goto again;
