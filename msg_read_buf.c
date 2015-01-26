@@ -49,11 +49,8 @@ static void set_up_mirroring() {
              page_size);
 
     // Create a dummy mapping to reserve a contiguous chunk of memory addresses
-    // for the ring buffer. It is completely over-mapped below, which according
-    // to POSIX frees it.
-    //
-    // Reserve two extra pages after the mapping as non-R/W guard pages to make
-    // sure we segfault on overruns.
+    // for the ring buffer. Reserve two extra pages as non-R/W guard pages to
+    // make sure we segfault on overruns.
     buf = mmap(NULL, 4*page_size, PROT_NONE,
                MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
     if (buf == MAP_FAILED)
