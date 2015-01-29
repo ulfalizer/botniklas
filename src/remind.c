@@ -15,7 +15,7 @@ static void remind(void *data) {
     free(reminder);
 }
 
-// Parses calendar time in the format "hh:mm:ss dd/mm yy", where yy is years
+// Parses calendar time in the format "hh:mm:ss dd/MM yy", where yy is years
 // after 2000. Updates 'arg' to point just after the time, provided it's valid.
 //
 // Returns (time_t)-1 if the time format is invalid.
@@ -29,14 +29,14 @@ static time_t parse_time(char **arg) {
          isdigit(s[0]) && isdigit(s[1]) && s[2] == ':' &&
          isdigit(s[3]) && isdigit(s[4]) && s[5] == ':' &&
          isdigit(s[6]) && isdigit(s[7]) && s[8] == ' ' &&
-         // "dd/mm "
+         // "dd/MM "
          isdigit(s[9]) && isdigit(s[10]) && s[11] == '/' &&
          isdigit(s[12]) && isdigit(s[13]) && s[14] == ' ' &&
          // "yy"
          isdigit(s[15]) && isdigit(s[16])))
         return -1;
 
-    *arg += strlen("hh:mm:ss dd/mm yy");
+    *arg += strlen("hh:mm:ss dd/MM yy");
 
     when_tm.tm_hour = 10*(s[0] - '0') + (s[1] - '0');
     when_tm.tm_min  = 10*(s[3] - '0') + (s[4] - '0');

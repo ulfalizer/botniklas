@@ -7,6 +7,8 @@
 // Command implementations. If the command is followed by a space, 'arg'
 // contains the text after that. Otherwise, 'arg' is NULL.
 
+// TODO: Add some PRIVMSG-specific helpers.
+
 static void compliment(int serv_fd, UNUSED char *arg, char *src, char *target) {
     write_msg(serv_fd, "PRIVMSG %s :You rock!", reply_target(src, target));
 }
@@ -21,16 +23,25 @@ static void remind(int serv_fd, char *arg, char *src, char *target) {
 }
 
 static void commands(int serv_fd, char *arg, char *src, char *target);
+static void help(int serv_fd, char *arg, char *src, char *target);
 
-#define CMD(cmd) { #cmd, cmd }
+#define CMD(cmd, help) { #cmd, cmd, help }
 
 static const struct {
     const char *const cmd;
     void (*const handler)(int serv_fd, char *arg, char *src, char *target);
-} cmds[] = { CMD(commands),
-             CMD(compliment),
-             CMD(echo),
-             CMD(remind) };
+    const char *help;
+} cmds[] = { CMD(commands,
+                 "Lists available commands."),
+             CMD(compliment,
+                 "Writes a compliment."),
+             CMD(echo,
+                 "Usage: !echo <text>"),
+             CMD(help,
+                 "Usage: !help <command>"),
+             CMD(remind,
+                 "Usage: !remind hh:mm:ss dd/MM yy <text of reminder>. yy is "
+                 "nr. of years past 2000.") };
 
 static void commands(int serv_fd, UNUSED char *arg, char *src, char *target) {
     begin_msg();
@@ -38,6 +49,28 @@ static void commands(int serv_fd, UNUSED char *arg, char *src, char *target) {
     for (size_t i = 0; i < ARRAY_LEN(cmds); ++i)
         append_msg(" !%s", cmds[i].cmd);
     send_msg(serv_fd);
+}
+
+static void help(int serv_fd, char *arg, char *src, char *target) {
+    if (arg == NULL) {
+        write_msg(serv_fd, "PRIVMSG %s :Usage: !help <command>. Use !commands "
+                           "to list commands.",
+                  reply_target(src, target));
+
+        return;
+    }
+
+    for (size_t i = 0; i < ARRAY_LEN(cmds); ++i)
+        if (strcmp(arg, cmds[i].cmd) == 0) {
+            write_msg(serv_fd, "PRIVMSG %s :%s", reply_target(src, target),
+                      cmds[i].help);
+
+            return;
+        }
+
+    write_msg(serv_fd, "PRIVMSG %s :'%s': No such command. Use !command "
+                       "to list commands.",
+              reply_target(src, target), arg);
 }
 
 void handle_cmd(int serv_fd, char *cmd, char *src, char *target) {
