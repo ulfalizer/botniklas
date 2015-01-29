@@ -7,6 +7,7 @@
 #include <inttypes.h>
 #include <limits.h>
 #include <math.h>
+#include <pthread.h>
 #include <setjmp.h>
 #include <signal.h>
 #include <stdalign.h>
@@ -19,6 +20,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <time.h>
 #include <unistd.h>
 
 // Exits unsuccessfully with a message to stderr.
@@ -28,6 +30,11 @@ _Noreturn void fail(const char *format, ...)
 // Exits unsuccessfully with errno and a message to stderr.
 _Noreturn void err(const char *format, ...)
   __attribute__((format(printf, 1, 2)));
+
+// Like err(), but uses the error code from 'errno_val' instead of errno.
+// Suitable for pthreads functions.
+_Noreturn void err_n(int errno_val, const char *format, ...)
+  __attribute__((format(printf, 2, 3)));
 
 // Prints a warning ("warning: " followed by the message) to stderr.
 void warning(const char *format, ...)

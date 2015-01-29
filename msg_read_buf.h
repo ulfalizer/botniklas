@@ -1,3 +1,5 @@
+// IRC message reading.
+
 // Initializes the read buffer. Must be called before the functions below.
 void msg_read_buf_init();
 

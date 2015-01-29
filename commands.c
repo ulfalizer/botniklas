@@ -2,41 +2,22 @@
 #include "commands.h"
 #include "options.h"
 #include "msg_write_buf.h"
-
-// Returns the target to which a reply should be sent. Private messages
-// generate replies directly to the user.
-//
-// TODO: Investigate robustness.
-static char *reply_target(char *src, char *target) {
-    char *end;
-
-    if (strcmp(target, nick) == 0) {
-        // Private message. See if 'src' contains the nick of the sender. We
-        // expect the nick to appear before the first '!', if any.
-
-        end = strchr(src, '!');
-        if (end == NULL)
-            return target;
-
-        *end = '\0';
-
-        // Return nick.
-        return src;
-    }
-
-    return target;
-}
+#include "remind.h"
 
 // Command implementations. If the command is followed by a space, 'arg'
 // contains the text after that. Otherwise, 'arg' is NULL.
 
 static void compliment(int serv_fd, char *arg, char *src, char *target) {
-    msg_write(serv_fd, "PRIVMSG %s :you rock!", reply_target(src, target));
+    msg_write(serv_fd, "PRIVMSG %s :You rock!", reply_target(src, target));
 }
 
 static void echo(int serv_fd, char *arg, char *src, char *target) {
     if (arg != NULL && *arg != '\0')
         msg_write(serv_fd, "PRIVMSG %s :%s", reply_target(src, target), arg);
+}
+
+static void remind(int serv_fd, char *arg, char *src, char *target) {
+    handle_remind(serv_fd, arg, reply_target(src, target));
 }
 
 static void commands(int serv_fd, char *arg, char *src, char *target);
@@ -48,11 +29,12 @@ static const struct {
     void (*const handler)(int serv_fd, char *arg, char *src, char *target);
 } cmds[] = { CMD(commands),
              CMD(compliment),
-             CMD(echo) };
+             CMD(echo),
+             CMD(remind) };
 
 static void commands(int serv_fd, char *arg, char *src, char *target) {
     msg_begin();
-    msg_append("PRIVMSG %s :available commands:", reply_target(src, target));
+    msg_append("PRIVMSG %s :Available commands:", reply_target(src, target));
     for (size_t i = 0; i < ARRAY_LEN(cmds); ++i)
         msg_append(" !%s", cmds[i].cmd);
     msg_send(serv_fd);

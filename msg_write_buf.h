@@ -1,3 +1,9 @@
+// IRC message writing. The functions are thread-safe.
+
+// Returns the target to which a reply should be sent. Private messages
+// generate replies directly to the user.
+char *reply_target(char *src, char *target);
+
 // Initializes the write buffer. Must be called before the functions below.
 void msg_write_buf_init();
 
@@ -10,7 +16,8 @@ void msg_write(int fd, const char *format, ...)
 
 // Multi-step IRC message building functions.
 
-// Clears the write buffer in preparation for appending to it.
+// Clears the write buffer in preparation for appending to it. Must be matched
+// by a call to msg_send().
 void msg_begin();
 
 // Appends text to the write buffer.

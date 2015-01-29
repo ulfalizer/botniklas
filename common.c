@@ -1,10 +1,10 @@
 #include "common.h"
 
-_Noreturn static void common_fail(bool print_errno, const char *format,
-                                  va_list ap) {
+_Noreturn static void common_fail(bool print_errno, int errno_val,
+                                  const char *format, va_list ap) {
     vfprintf(stderr, format, ap);
     if (print_errno)
-        fprintf(stderr, ": %s", strerror(errno));
+        fprintf(stderr, ": %s", strerror(errno_val));
     putc('\n', stderr);
     exit(EXIT_FAILURE);
 }
@@ -13,14 +13,21 @@ void err(const char *format, ...) {
     va_list ap;
 
     va_start(ap, format);
-    common_fail(true, format, ap);
+    common_fail(true, errno, format, ap);
+}
+
+void err_n(int errno_val, const char *format, ...) {
+    va_list ap;
+
+    va_start(ap, format);
+    common_fail(true, errno_val, format, ap);
 }
 
 void fail(const char *format, ...) {
     va_list ap;
 
     va_start(ap, format);
-    common_fail(false, format, ap);
+    common_fail(false, 0, format, ap);
 }
 
 void warning(const char *format, ...) {

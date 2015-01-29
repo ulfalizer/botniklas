@@ -113,8 +113,8 @@ static void adjust_indices() {
     }
 }
 
-// Called to fetch more data from the socket (when we have not seen a complete
-// message yet).
+// Called to fetch more data from the socket when we have not seen a complete
+// message yet.
 static void read_more(int fd) {
     ssize_t n_recv;
 
