@@ -1,5 +1,5 @@
 #include "common.h"
-#include "msg_write_buf.h"
+#include "msg_io.h"
 #include "options.h"
 #include "time_event.h"
 
@@ -11,7 +11,7 @@ typedef struct Reminder {
 static void remind(void *data) {
     Reminder *reminder = (Reminder*)data;
 
-    msg_write(reminder->serv_fd, "PRIVMSG %s :REMINDER: %s", channel, reminder->msg);
+    write_msg(reminder->serv_fd, "PRIVMSG %s :REMINDER: %s", channel, reminder->msg);
     free(reminder);
 }
 
@@ -69,14 +69,14 @@ void handle_remind(int serv_fd, char *arg, char *reply_target) {
     time_t trig_time;
 
     if (arg == NULL) {
-        msg_write(serv_fd, "PRIVMSG %s :Error: No time given.", reply_target);
+        write_msg(serv_fd, "PRIVMSG %s :Error: No time given.", reply_target);
 
         return;
     }
 
     trig_time = parse_time(&arg);
     if (trig_time == -1) {
-        msg_write(serv_fd, "PRIVMSG %s :Error: Time is too wonky. Be more "
+        write_msg(serv_fd, "PRIVMSG %s :Error: Time is too wonky. Be more "
                            "straightforward.", reply_target);
 
         return;
@@ -87,14 +87,14 @@ void handle_remind(int serv_fd, char *arg, char *reply_target) {
         err("time (remind command)");
 
     if (trig_time < now) {
-        msg_write(serv_fd, "PRIVMSG %s :Error: That's in the past.",
+        write_msg(serv_fd, "PRIVMSG %s :Error: That's in the past.",
                   reply_target);
 
         return;
     }
 
     if (*arg++ == '\0') {
-        msg_write(serv_fd, "PRIVMSG %s :Error: Missing reminder message.",
+        write_msg(serv_fd, "PRIVMSG %s :Error: Missing reminder message.",
                   reply_target);
 
         return;

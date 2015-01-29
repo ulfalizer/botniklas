@@ -1,6 +1,6 @@
 #include "common.h"
 #include "dynamic_string.h"
-#include "msg_write_buf.h"
+#include "msg_io.h"
 #include "options.h"
 
 // Protects the write buffer and prevents the contents of multiple write()s
@@ -63,7 +63,7 @@ void msg_write_buf_free() {
         err_n(res, "pthread_mutex_destroy (write)");
 }
 
-void msg_write(int fd, const char *format, ...) {
+void write_msg(int fd, const char *format, ...) {
     va_list ap;
 
     lock_write();
@@ -78,13 +78,13 @@ void msg_write(int fd, const char *format, ...) {
     unlock_write();
 }
 
-void msg_begin() {
+void begin_msg() {
     lock_write();
 
     string_clear(&msg_write_buf);
 }
 
-void msg_append(const char *format, ...) {
+void append_msg(const char *format, ...) {
     va_list ap;
 
     va_start(ap, format);
@@ -92,7 +92,7 @@ void msg_append(const char *format, ...) {
     va_end(ap);
 }
 
-void msg_send(int fd) {
+void send_msg(int fd) {
     string_append(&msg_write_buf, "\r\n");
     writen(fd, string_get(&msg_write_buf), string_len(&msg_write_buf));
 

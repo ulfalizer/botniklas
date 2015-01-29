@@ -1,7 +1,8 @@
 #include "common.h"
 #include "commands.h"
 #include "irc.h"
-#include "msg_write_buf.h"
+#include "msg_io.h"
+#include "msgs.h"
 #include "options.h"
 
 static void print_params(IRC_msg *msg) {
@@ -21,7 +22,7 @@ static void handle_error(UNUSED int serv_fd, IRC_msg *msg) {
 }
 
 static void handle_ping(int serv_fd, IRC_msg *msg) {
-    msg_write(serv_fd, "PONG :%s", msg->params[0]);
+    write_msg(serv_fd, "PONG :%s", msg->params[0]);
 }
 
 static void handle_privmsg(int serv_fd, IRC_msg *msg) {
@@ -30,7 +31,7 @@ static void handle_privmsg(int serv_fd, IRC_msg *msg) {
 }
 
 static void handle_welcome(int serv_fd, UNUSED IRC_msg *msg) {
-    msg_write(serv_fd, "JOIN %s", channel);
+    write_msg(serv_fd, "JOIN %s", channel);
 }
 
 static bool check_for_error_reply(IRC_msg *msg) {

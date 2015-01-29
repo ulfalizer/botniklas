@@ -1,8 +1,7 @@
 #include "common.h"
 #include "irc.h"
-#include "messages.h"
-#include "msg_read_buf.h"
-#include "msg_write_buf.h"
+#include "msg_io.h"
+#include "msgs.h"
 #include "options.h"
 
 #define RET_INVALID_MSG(s)                        \
@@ -130,8 +129,8 @@ int connect_to_irc_server(const char *host, const char *port, const char *nick,
 
     serv_fd = connect_to(host, port, SOCK_STREAM);
 
-    msg_write(serv_fd, "NICK %s", nick);
-    msg_write(serv_fd, "USER %s 0 * :%s", username, realname);
+    write_msg(serv_fd, "NICK %s", nick);
+    write_msg(serv_fd, "USER %s 0 * :%s", username, realname);
 
     return serv_fd;
 }

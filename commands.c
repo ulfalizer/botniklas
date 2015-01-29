@@ -1,19 +1,19 @@
 #include "common.h"
 #include "commands.h"
+#include "msg_io.h"
 #include "options.h"
-#include "msg_write_buf.h"
 #include "remind.h"
 
 // Command implementations. If the command is followed by a space, 'arg'
 // contains the text after that. Otherwise, 'arg' is NULL.
 
 static void compliment(int serv_fd, UNUSED char *arg, char *src, char *target) {
-    msg_write(serv_fd, "PRIVMSG %s :You rock!", reply_target(src, target));
+    write_msg(serv_fd, "PRIVMSG %s :You rock!", reply_target(src, target));
 }
 
 static void echo(int serv_fd, char *arg, char *src, char *target) {
     if (arg != NULL && *arg != '\0')
-        msg_write(serv_fd, "PRIVMSG %s :%s", reply_target(src, target), arg);
+        write_msg(serv_fd, "PRIVMSG %s :%s", reply_target(src, target), arg);
 }
 
 static void remind(int serv_fd, char *arg, char *src, char *target) {
@@ -33,11 +33,11 @@ static const struct {
              CMD(remind) };
 
 static void commands(int serv_fd, UNUSED char *arg, char *src, char *target) {
-    msg_begin();
-    msg_append("PRIVMSG %s :Available commands:", reply_target(src, target));
+    begin_msg();
+    append_msg("PRIVMSG %s :Available commands:", reply_target(src, target));
     for (size_t i = 0; i < ARRAY_LEN(cmds); ++i)
-        msg_append(" !%s", cmds[i].cmd);
-    msg_send(serv_fd);
+        append_msg(" !%s", cmds[i].cmd);
+    send_msg(serv_fd);
 }
 
 void handle_cmd(int serv_fd, char *cmd, char *src, char *target) {

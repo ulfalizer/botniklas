@@ -1,7 +1,6 @@
 #include "common.h"
 #include "irc.h"
-#include "msg_read_buf.h"
-#include "msg_write_buf.h"
+#include "msg_io.h"
 #include "options.h"
 #include "time_event.h"
 

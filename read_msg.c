@@ -4,7 +4,7 @@
 // "wraparound".
 
 #include "common.h"
-#include "msg_read_buf.h"
+#include "msg_io.h"
 #include "options.h"
 
 static char *buf;
