@@ -1,6 +1,6 @@
 // IRC message ring buffer implemented by mirroring two adjacent pages in
-// memory. Allows us to read messages with a single recv() whenever possible
-// and to always return messages in contiguous chunks, even in case of
+// memory. Allows us to read (blocks of) messages with a single recv() whenever
+// possible and to always return messages in contiguous chunks, even in case of
 // "wraparound".
 
 #include "common.h"
