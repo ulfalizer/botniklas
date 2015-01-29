@@ -60,7 +60,7 @@ static void arm_timer(Time_event *event) {
 }
 
 // Timer callback. Runs in a separate thread.
-static void handle_time_event(union sigval val) {
+static void handle_time_event(UNUSED union sigval val) {
     void (*handler)(void *data);
     void *data;
     Time_event *old_start;

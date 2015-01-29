@@ -7,8 +7,6 @@
 #include "msg_read_buf.h"
 #include "options.h"
 
-#include <sys/mman.h>
-
 static char *buf;
 // The buffer contents is stored in the index range [start,end[.
 //

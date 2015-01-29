@@ -18,22 +18,23 @@
 #include <stdlib.h>
 #include <stdnoreturn.h>
 #include <string.h>
+#include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <time.h>
 #include <unistd.h>
 
 // Exits unsuccessfully with a message to stderr.
-_Noreturn void fail(const char *format, ...)
+noreturn void fail(const char *format, ...)
   __attribute__((format(printf, 1, 2)));
 
 // Exits unsuccessfully with errno and a message to stderr.
-_Noreturn void err(const char *format, ...)
+noreturn void err(const char *format, ...)
   __attribute__((format(printf, 1, 2)));
 
 // Like err(), but uses the error code from 'errno_val' instead of errno.
 // Suitable for pthreads functions.
-_Noreturn void err_n(int errno_val, const char *format, ...)
+noreturn void err_n(int errno_val, const char *format, ...)
   __attribute__((format(printf, 2, 3)));
 
 // Prints a warning ("warning: " followed by the message) to stderr.
@@ -63,6 +64,8 @@ typedef unsigned char uc;
      _a < _b ? _a : _b; })
 
 #define uninitialized_var(x) x = x
+
+#define UNUSED __attribute__((unused))
 
 #define ARRAY_LEN(a) (sizeof (a)/sizeof *(a))
 

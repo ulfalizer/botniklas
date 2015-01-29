@@ -14,7 +14,7 @@ static void print_params(IRC_msg *msg) {
     }
 }
 
-static void handle_error(int serv_fd, IRC_msg *msg) {
+static void handle_error(UNUSED int serv_fd, IRC_msg *msg) {
     fputs("warning: Received ERROR message. ", stderr);
     print_params(msg);
     putc('\n', stderr);
@@ -29,7 +29,7 @@ static void handle_privmsg(int serv_fd, IRC_msg *msg) {
         handle_cmd(serv_fd, msg->params[1] + 1, msg->prefix, msg->params[0]);
 }
 
-static void handle_welcome(int serv_fd, IRC_msg *msg) {
+static void handle_welcome(int serv_fd, UNUSED IRC_msg *msg) {
     msg_write(serv_fd, "JOIN %s", channel);
 }
 

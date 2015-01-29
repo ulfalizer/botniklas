@@ -1,7 +1,7 @@
 #include "common.h"
 
-_Noreturn static void common_fail(bool print_errno, int errno_val,
-                                  const char *format, va_list ap) {
+noreturn static void common_fail(bool print_errno, int errno_val,
+                                 const char *format, va_list ap) {
     vfprintf(stderr, format, ap);
     if (print_errno)
         fprintf(stderr, ": %s", strerror(errno_val));

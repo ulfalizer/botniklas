@@ -7,7 +7,7 @@
 // Command implementations. If the command is followed by a space, 'arg'
 // contains the text after that. Otherwise, 'arg' is NULL.
 
-static void compliment(int serv_fd, char *arg, char *src, char *target) {
+static void compliment(int serv_fd, UNUSED char *arg, char *src, char *target) {
     msg_write(serv_fd, "PRIVMSG %s :You rock!", reply_target(src, target));
 }
 
@@ -32,7 +32,7 @@ static const struct {
              CMD(echo),
              CMD(remind) };
 
-static void commands(int serv_fd, char *arg, char *src, char *target) {
+static void commands(int serv_fd, UNUSED char *arg, char *src, char *target) {
     msg_begin();
     msg_append("PRIVMSG %s :Available commands:", reply_target(src, target));
     for (size_t i = 0; i < ARRAY_LEN(cmds); ++i)

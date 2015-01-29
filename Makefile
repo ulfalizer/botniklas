@@ -5,7 +5,7 @@ headers := commands.h common.h common_net.h dynamic_string.h irc.h messages.h \
   msg_read_buf.h msg_write_buf.h options.h remind.h time_event.h
 
 bot: $(sources) $(headers)
-	gcc -std=gnu11 -O3 -Wall -Iinclude -o $@ $(sources) -pthread -lrt
+	gcc -std=gnu11 -O3 -Wall -Wextra -Wno-sign-compare -Iinclude -o $@ $(sources) -pthread -lrt
 
 .PHONY: clean
 clean:
