@@ -66,16 +66,17 @@ void msg_write_buf_free() {
 void write_msg(int fd, const char *format, ...) {
     va_list ap;
 
+    va_start(ap, format);
+
     lock_write();
 
-    va_start(ap, format);
     string_set_v(&msg_write_buf, format, ap);
     string_append(&msg_write_buf, "\r\n");
-    va_end(ap);
-
     writen(fd, string_get(&msg_write_buf), string_len(&msg_write_buf));
 
     unlock_write();
+
+    va_end(ap);
 }
 
 void begin_msg() {
