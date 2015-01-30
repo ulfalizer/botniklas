@@ -30,7 +30,7 @@ static void help(int serv_fd, char *arg, char *src, char *target);
 static const struct {
     const char *const cmd;
     void (*const handler)(int serv_fd, char *arg, char *src, char *target);
-    const char *help;
+    const char *const help;
 } cmds[] = { CMD(commands,
                  "Lists available commands."),
              CMD(compliment,
