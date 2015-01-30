@@ -21,9 +21,11 @@ int main(int argc, char *argv[]) {
 
     process_cmdline(argc, argv);
 
-    serv_fd = connect_to_irc_server(server, port, nick, username, realname);
     init();
+
+    serv_fd = connect_to_irc_server(server, port, nick, username, realname);
     for (;;)
         process_next_msg(serv_fd);
+
     deinit(); // Currently not reachable.
 }
