@@ -21,9 +21,9 @@ static void remind(void *data) {
 // Returns (time_t)-1 if the time format is invalid.
 //
 // TODO: Relax format and see if we can safely use sscanf().
-static time_t parse_time(char **arg) {
+static time_t parse_time(const char **arg) {
     struct tm when_tm;
-    char *s = *arg;
+    const char *s = *arg;
 
     if(!(// "hh:mm:ss "
          isdigit(s[0]) && isdigit(s[1]) && s[2] == ':' &&
@@ -62,7 +62,7 @@ static time_t parse_time(char **arg) {
     return mktime(&when_tm);
 }
 
-void handle_remind(int serv_fd, char *arg, char *reply_target) {
+void handle_remind(int serv_fd, const char *arg, const char *reply_target) {
     time_t now;
     Reminder *reminder;
     size_t reminder_len;
