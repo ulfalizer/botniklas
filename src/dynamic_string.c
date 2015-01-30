@@ -1,7 +1,7 @@
 #include "common.h"
 #include "dynamic_string.h"
 
-#define INITIAL_BUF_LEN 16
+#define INITIAL_BUF_LEN 4096
 
 void string_init(String *s) {
     void string_clear(String *s);
