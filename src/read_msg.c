@@ -60,7 +60,7 @@ static void set_up_mirroring() {
     // likely-unique name and avoid issues if we fail to shm_unlink(). We
     // open the mapping with O_EXCL later.
     snprintf(shm_tmp_name, sizeof shm_tmp_name,
-             "botniklas-ring-buffer-%llu", (unsigned long long)getpid());
+             "/botniklas-ring-buffer-%llu", (unsigned long long)getpid());
 
     // In practice this is likely to just open a file under /dev/shm (an
     // in-memory filesystem) on Linux.
