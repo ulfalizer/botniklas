@@ -29,12 +29,11 @@ static void test_mirroring() {
 
 // An alternative approach in this function would be to use remap_file_pages()
 // (like in old versions), which is a bit cleaner as we do not have to touch
-// the filesystem. Unfortunately it's unsupported by Valgrind and also
-// deprecated.
+// the filesystem or use POSIX shared memory. Unfortunately it's unsupported by
+// Valgrind and also deprecated.
 static void set_up_mirroring() {
     int fd;
-    // Assume this gives us an in-memory fs.
-    static char tmp_file_path[] = "/dev/shm/botniklas-ring-buffer-XXXXXX";
+    static char shm_tmp_name[64];
 
     page_size = sysconf(_SC_PAGESIZE);
     if (page_size == -1)
@@ -54,14 +53,23 @@ static void set_up_mirroring() {
     if (buf == MAP_FAILED)
         err("mmap setup (message read buffer)");
 
-    // Create a dummy file to hold the page that is mirrored below.
+    // Create a dummy POSIX shared memory object to hold the page that is
+    // mirrored below.
 
-    fd = mkstemp(tmp_file_path);
+    // Crappy mktemp() (that doesn't generate a warning) just to generate a
+    // likely-unique name and avoid issues if we fail to shm_unlink(). We
+    // open the mapping with O_EXCL later.
+    snprintf(shm_tmp_name, sizeof shm_tmp_name,
+             "botniklas-ring-buffer-%llu", (unsigned long long)getpid());
+
+    // In practice this is likely to just open a file under /dev/shm (an
+    // in-memory filesystem) on Linux.
+    fd = shm_open(shm_tmp_name, O_RDWR | O_CREAT | O_EXCL, 0);
     if (fd == -1)
-        err("mkstemp (message read buffer)");
+        err("shm_open (message read buffer)");
 
-    if (unlink(tmp_file_path) == -1)
-        err("unlink (message read buffer)");
+    if (shm_unlink(shm_tmp_name) == -1)
+        err("shm_unlink (message read buffer)");
 
     // The mapped page must actually exist in the file. Otherwise we'll get a
     // SIGBUS when trying to access it.
