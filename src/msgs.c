@@ -57,8 +57,8 @@ static bool check_for_error_reply(IRC_msg *msg) {
 #define DONT_CARE UINT_MAX
 
 static const struct {
-    const char *const cmd;
-    void (*const handler)(int serv_fd, IRC_msg *msg);
+    const char *cmd;
+    void (*handler)(int serv_fd, IRC_msg *msg);
     size_t n_params_expected;
 } msgs[] = {
   { "001",     handle_welcome, DONT_CARE }, // RPL_WELCOME

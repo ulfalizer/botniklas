@@ -28,9 +28,9 @@ static void help(int serv_fd, char *arg, char *src, char *target);
 #define CMD(cmd, help) { #cmd, cmd, help }
 
 static const struct {
-    const char *const cmd;
-    void (*const handler)(int serv_fd, char *arg, char *src, char *target);
-    const char *const help;
+    const char *cmd;
+    void (*handler)(int serv_fd, char *arg, char *src, char *target);
+    const char *help;
 } cmds[] = { CMD(commands,
                  "Lists available commands."),
              CMD(compliment,
