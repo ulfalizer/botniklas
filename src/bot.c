@@ -103,6 +103,8 @@ again:
         n_events = epoll_wait(epoll_fd, events, ARRAY_LEN(events), -1);
         if (n_events == -1) {
             if (errno == EINTR)
+                // epoll_wait() generates EINTR if the process is stopped and
+                // resumed, so it's important that we handle this case.
                 goto again;
             err("epoll_wait");
         }
