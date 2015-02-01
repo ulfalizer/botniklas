@@ -8,18 +8,27 @@ void msg_read_buf_init();
 // Frees the read buffer.
 void msg_read_buf_free();
 
-// Reads an IRC message terminated by '\r' or '\n' and returns a pointer to it.
-// Replaces the final '\r' or '\n' with '\0' for ease of further processing.
+// Reads as much data as currently possible (and that fits in the read buffer)
+// from 'fd' into the read buffer.
 //
-// Returns NULL for empty messages and messages containing null bytes (with a
-// warning in the latter case). The result is not null-terminated in these
-// cases.
+// Intended to be called when we know there is data so that we do not block.
+void recv_msgs(int fd);
+
+// Extracts the first IRC message (terminated by '\r' or '\n') from the read
+// buffer and returns a pointer to it. Replaces the final '\r' or '\n' with
+// '\0' for ease of further processing.
+//
+// 'msg' is set to NULL for empty messages and messages containing null bytes
+// (with a warning in the latter case). The result is not null-terminated in
+// these cases.
+//
+// Returns 'false' if no more complete messages exist in the read buffer.
 //
 // Exits the program if a message that won't fit in the buffer is received.
-char *read_msg(int fd);
+bool get_msg(char **msg);
 
 //
-// IRC message writing. The functions are thread-safe.
+// IRC message writing.
 //
 
 // Returns the target to which a reply should be sent. Private messages

@@ -89,9 +89,9 @@ static bool extract_msg_params(char *cur, char *params[], size_t *n_params) {
 }
 
 // Extracts the prefix (if any), command, and parameters from the IRC message
-// in 'msg_buf'.
-static bool split_msg(char *msg_buf, IRC_msg *msg) {
-    char *cur = msg_buf;
+// in 'msg_str'.
+static bool split_msg(char *msg_str, IRC_msg *msg) {
+    char *cur = msg_str;
 
     if (!extract_msg_prefix(&cur, &msg->prefix))
         return false;
@@ -105,22 +105,26 @@ static bool split_msg(char *msg_buf, IRC_msg *msg) {
     return true;
 }
 
-void process_next_msg(int serv_fd) {
-    IRC_msg msg;
-    char *msg_buf;
+void process_msgs(int serv_fd) {
+    char *msg_str;
 
-skip_msg:
-    msg_buf = read_msg(serv_fd);
-    if (msg_buf == NULL)
-        goto skip_msg;
+    recv_msgs(serv_fd);
 
-    if (trace_msgs)
-        printf("message from server: '%s'\n", msg_buf);
+    while (get_msg(&msg_str)) {
+        IRC_msg msg;
 
-    if (!split_msg(msg_buf, &msg))
-        goto skip_msg;
+        // Skip empty and invalid messages.
+        if (msg_str == NULL)
+            continue;
 
-    handle_msg(serv_fd, &msg);
+        if (trace_msgs)
+            printf("message from server: '%s'\n", msg_str);
+
+        if (!split_msg(msg_str, &msg))
+            continue;
+
+        handle_msg(serv_fd, &msg);
+    }
 }
 
 int connect_to_irc_server(const char *host, const char *port, const char *nick,

@@ -119,9 +119,7 @@ static void adjust_indices() {
     }
 }
 
-// Called to fetch more data from the socket when we have not seen a complete
-// message yet.
-static void read_more(int fd) {
+void recv_msgs(int fd) {
     ssize_t n_recv;
 
     assert_index_sanity();
@@ -148,7 +146,7 @@ again:
     assert_index_sanity();
 }
 
-char *read_msg(int fd) {
+bool get_msg(char **msg) {
     bool has_null_bytes = false;
     size_t cur;
 
@@ -156,40 +154,43 @@ char *read_msg(int fd) {
     // Must be set after a possible index adjustment.
     cur = start;
 
-    for (;; read_more(fd))
-        for (; cur < end; ++cur)
-            switch (buf[cur]) {
-            case '\r': case '\n':
-                if (has_null_bytes) {
-                    warning("ignoring invalid message containing null bytes: "
-                            "'%.*s'", (int)(cur - start), buf + start);
+    for (; cur < end; ++cur)
+        switch (buf[cur]) {
+        case '\r': case '\n':
+            if (has_null_bytes) {
+                warning("ignoring invalid message containing null bytes: "
+                        "'%.*s'", (int)(cur - start), buf + start);
 
-                    if (exit_on_invalid_msg)
-                        exit(EXIT_FAILURE);
+                if (exit_on_invalid_msg)
+                    exit(EXIT_FAILURE);
 
-                    goto invalid_msg;
-                }
-
-                // Treat empty messages as invalid.
-                if (cur == start)
-                    goto invalid_msg;
-
-                // null-terminate the message for ease of further processing.
-                buf[cur] = '\0';
-
-                char *res = buf + start;
-                // New start is after the message.
-                start = cur + 1;
-
-                return res;
-
-            case '\0':
-                has_null_bytes = true;
+                goto invalid_msg;
             }
 
+            // Treat empty messages as invalid.
+            if (cur == start)
+                goto invalid_msg;
+
+            // null-terminate the message for ease of further processing.
+            buf[cur] = '\0';
+
+            *msg = buf + start;
+            // New start is after the message.
+            start = cur + 1;
+
+            return true;
+
+        case '\0':
+            has_null_bytes = true;
+        }
+
+    // We haven't received all the data for the message yet.
+    return false;
+
 invalid_msg:
+    *msg = NULL;
     // New start is after the message.
     start = cur + 1;
 
-    return NULL;
+    return true;
 }
