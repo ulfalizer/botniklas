@@ -12,7 +12,9 @@ void msg_read_buf_free();
 // from 'fd' into the read buffer.
 //
 // Intended to be called when we know there is data so that we do not block.
-void recv_msgs(int fd);
+//
+// Returns false for an orderly shutdown from the server.
+bool recv_msgs(int fd);
 
 // Extracts the first IRC message (terminated by '\r' or '\n') from the read
 // buffer and returns a pointer to it. Replaces the final '\r' or '\n' with

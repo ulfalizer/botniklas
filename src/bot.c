@@ -107,12 +107,12 @@ again:
             err("epoll_wait");
         }
 
-        // TODO: Handle server-initiated shutdown cleanly.
-
         for (int i = 0; i < n_events; ++i) {
             switch (events[i].data.u32) {
             case SERVER:
-                process_msgs(serv_fd);
+                if (!process_msgs(serv_fd))
+                    // The server closed the connection.
+                    goto done;
                 break;
 
             case TIMER:
@@ -129,11 +129,14 @@ again:
                 printf("Received signal '%s' - shutting down\n",
                        strsignal(si.ssi_signo));
 
-                deinit();
-
-                exit(EXIT_SUCCESS);
+                goto done;
                 }
             }
         }
     }
+
+
+done:
+    deinit();
+    exit(EXIT_SUCCESS);
 }

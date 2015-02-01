@@ -119,7 +119,7 @@ static void adjust_indices() {
     }
 }
 
-void recv_msgs(int fd) {
+bool recv_msgs(int fd) {
     ssize_t n_recv;
 
     assert_index_sanity();
@@ -133,8 +133,11 @@ void recv_msgs(int fd) {
 again:
     n_recv = recv(fd, buf + end, page_size - (end - start), 0);
 
-    if (n_recv == 0)
-        fail("connection closed by server");
+    if (n_recv == 0) {
+        puts("The server closed the connection");
+
+        return false;
+    }
 
     if (n_recv == -1) {
         if (errno == EINTR)
@@ -144,6 +147,8 @@ again:
 
     end += n_recv;
     assert_index_sanity();
+
+    return true;
 }
 
 bool get_msg(char **msg) {

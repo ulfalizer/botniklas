@@ -16,8 +16,11 @@ int connect_to_irc_server(const char *host, const char *port, const char *nick,
 // received complete message. Data forming a partial message at the end is left
 // in the read buffer for later.
 //
-// Intended to be called when we know there is data so that we do not block.
-void process_msgs(int serv_fd);
+// Intended to be called when we know there is data (or the server closed the
+// connection) so that we do not block.
+//
+// Returns false for an orderly shutdown from the server.
+bool process_msgs(int serv_fd);
 
 // Converts error replies (400-599) to their symbolic constants
 // (401 -> "ERR_NOSUCHNICK", etc.).

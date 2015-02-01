@@ -105,10 +105,11 @@ static bool split_msg(char *msg_str, IRC_msg *msg) {
     return true;
 }
 
-void process_msgs(int serv_fd) {
+bool process_msgs(int serv_fd) {
     char *msg_str;
 
-    recv_msgs(serv_fd);
+    if (!recv_msgs(serv_fd))
+        return false;
 
     while (get_msg(&msg_str)) {
         IRC_msg msg;
@@ -125,6 +126,8 @@ void process_msgs(int serv_fd) {
 
         handle_msg(serv_fd, &msg);
     }
+
+    return true;
 }
 
 int connect_to_irc_server(const char *host, const char *port, const char *nick,
