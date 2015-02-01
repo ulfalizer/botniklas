@@ -24,7 +24,7 @@ typedef struct Time_event {
 static Time_event *start = NULL;
 
 void init_time_event() {
-    timer_fd = timerfd_create(CLOCK_REALTIME, 0);
+    timer_fd = timerfd_create(CLOCK_REALTIME, TFD_CLOEXEC);
     if (timer_fd == -1)
         err("timerfd_create");
 }

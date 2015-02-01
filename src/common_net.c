@@ -44,7 +44,8 @@ int connect_to(const char *host, const char *service, int type) {
     // Try connecting to each of the returned addresses. Return on the first
     // successful connection.
     for (struct addrinfo *ai = ais; ai != NULL; ai = ai->ai_next) {
-        peer_fd = socket(ai->ai_family, ai->ai_socktype, ai->ai_protocol);
+        peer_fd = socket(ai->ai_family, ai->ai_socktype | SOCK_CLOEXEC,
+                         ai->ai_protocol);
         if (peer_fd != -1 &&
             connect(peer_fd, ai->ai_addr, ai->ai_addrlen) != -1)
             goto success;

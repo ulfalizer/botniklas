@@ -47,7 +47,7 @@ static void init_rest() {
     if (sigprocmask(SIG_BLOCK, &sig_mask, NULL) == -1)
         err("sigprocmask");
 
-    signal_fd = signalfd(-1, &sig_mask, 0);
+    signal_fd = signalfd(-1, &sig_mask, SFD_CLOEXEC);
     if (signal_fd == -1)
         err("signalfd");
 
@@ -58,7 +58,7 @@ static void init_rest() {
 
     // Create an epoll instance to monitor the descriptors.
 
-    epoll_fd = epoll_create(3);
+    epoll_fd = epoll_create1(EPOLL_CLOEXEC);
     if (epoll_fd == -1)
         err("epoll_create");
 
