@@ -112,18 +112,30 @@ again:
         for (int i = 0; i < n_events; ++i) {
             switch (events[i].data.u32) {
             case SERVER:
+                // We currently assume that any notification (EPOLLIN,
+                // EPOLLERR, EPOLLHUP) will result in a non-blocking read,
+                // meaning we can handle errors inside process_msgs().
                 if (!process_msgs(serv_fd))
                     // Connection shutdown by the server or a receive error.
                     goto done;
                 break;
 
             case TIMER:
+                if (!(events[i].events & EPOLLIN) ||
+                      events[i].events & EPOLLERR)
+                    fail("Got epoll error/weirdness related to timerfd. Not "
+                         "sure what's going on. Bailing out.");
                 handle_time_event();
                 break;
 
             case SIGNAL:
                 {
                 struct signalfd_siginfo si;
+
+                if (!(events[i].events & EPOLLIN) ||
+                      events[i].events & EPOLLERR)
+                    fail("Got epoll error/weirdness related to signalfd. Not "
+                         "sure what's going on. Bailing out.");
 
                 if (read(signal_fd, &si, sizeof si) == -1)
                     err("read (signalfd)");
