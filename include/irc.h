@@ -19,7 +19,8 @@ int connect_to_irc_server(const char *host, const char *port, const char *nick,
 // Intended to be called when we know there is data (or the server closed the
 // connection) so that we do not block.
 //
-// Returns false for an orderly shutdown from the server.
+// Returns false in case of an orderly shutdown from the server or a receive
+// error.
 bool process_msgs(int serv_fd);
 
 // Converts error replies (400-599) to their symbolic constants

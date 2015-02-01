@@ -113,7 +113,7 @@ again:
             switch (events[i].data.u32) {
             case SERVER:
                 if (!process_msgs(serv_fd))
-                    // The server closed the connection.
+                    // Connection shutdown by the server or a receive error.
                     goto done;
                 break;
 
@@ -140,5 +140,7 @@ again:
 
 done:
     deinit();
+
+    puts("Process shut down cleanly");
     exit(EXIT_SUCCESS);
 }

@@ -142,7 +142,11 @@ again:
     if (n_recv == -1) {
         if (errno == EINTR)
             goto again;
-        err("recv (message read buffer)");
+
+        printf("error in recv() while reading messages from server: %s\n",
+               strerror(errno));
+
+        return false;
     }
 
     end += n_recv;

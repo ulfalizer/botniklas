@@ -13,7 +13,8 @@ void msg_read_buf_free();
 //
 // Intended to be called when we know there is data so that we do not block.
 //
-// Returns false for an orderly shutdown from the server.
+// Returns false in case of an orderly shutdown from the server or a receive
+// error.
 bool recv_msgs(int fd);
 
 // Extracts the first IRC message (terminated by '\r' or '\n') from the read
