@@ -15,8 +15,10 @@ static int epoll_fd;
 #define SIGNAL 2
 
 // Adds 'fd' to the monitored set for the epoll instance 'epfd'. We monitor for
-// data to read. 'id' is an event source identifier that we receive in data.u32
-// when events occur. If 'edge_triggered' is true, EPOLLET is used.
+// data to read (EPOLLIN), hangups (EPOLLHUP), and errors (EPOLLERR), where the
+// latter two are implicit and don't need to be specified. 'id' is an event
+// source identifier that we receive in data.u32 when events occur. If
+// 'edge_triggered' is true, EPOLLET is used.
 static void add_epoll_read_fd(int epfd, int fd, uint32_t id,
                               bool edge_triggered) {
     struct epoll_event ev = {
