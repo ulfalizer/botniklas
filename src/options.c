@@ -4,6 +4,7 @@
 #define CHANNEL_DEFAULT "#botniklas"
 #define NICK_DEFAULT "botniklas"
 #define PORT_DEFAULT "6667"
+#define QUIT_MESSAGE_DEFAULT "botniklas IRC bot signing off"
 #define REALNAME_DEFAULT NICK_DEFAULT
 #define USERNAME_DEFAULT NICK_DEFAULT
 
@@ -12,6 +13,7 @@
 const char *channel = CHANNEL_DEFAULT;
 const char *nick = NICK_DEFAULT;
 const char *port = PORT_DEFAULT;
+const char *quit_message = QUIT_MESSAGE_DEFAULT;
 const char *realname = REALNAME_DEFAULT;
 const char *server;
 const char *username = USERNAME_DEFAULT;
@@ -36,6 +38,7 @@ static void print_usage(char *argv[], FILE *stream) {
             "  -n <nick to use> (default: \""NICK_DEFAULT"\")\n"
             "  -p <IRC server port> (default: \""PORT_DEFAULT"\")\n"
             "     Service names from /etc/services are also supported.\n"
+            "  -q <quit message> (default: \""QUIT_MESSAGE_DEFAULT"\")\n"
             "  -r <realname to use> (default: \""REALNAME_DEFAULT"\")\n"
             "  -u <username to use> (default: \""USERNAME_DEFAULT"\")\n"
             "  -t  Print a trace of messages received from the server to stdout.\n",
@@ -48,13 +51,14 @@ void process_cmdline(int argc, char *argv[]) {
     // Print errors ourself.
     opterr = 0;
 
-    while ((opt = getopt(argc, argv, ":c:ehn:p:r:tu:")) != -1)
+    while ((opt = getopt(argc, argv, ":c:ehn:p:q:r:tu:")) != -1)
         switch (opt) {
         case 'c': channel = optarg; break;
         case 'e': exit_on_invalid_msg = true; break;
         case 'h': print_usage(argv, stdout); exit(EXIT_SUCCESS);
         case 'n': nick = optarg; break;
         case 'p': port = optarg; break;
+        case 'q': quit_message = optarg; break;
         case 'r': realname = optarg; break;
         case 't': trace_msgs = true; break;
         case 'u': username = optarg; break;

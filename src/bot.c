@@ -130,6 +130,12 @@ again:
 
             case SIGNAL:
                 {
+                // Send a QUIT message when the first signal is received, which
+                // should cause a server-side shutdown and make sure the quit
+                // message is seen. If another signal arrives, close the
+                // connection ourselves.
+
+                static bool first_signal = true;
                 struct signalfd_siginfo si;
 
                 if (!(events[i].events & EPOLLIN) ||
@@ -140,10 +146,18 @@ again:
                 if (read(signal_fd, &si, sizeof si) == -1)
                     err("read (signalfd)");
 
-                printf("Received signal '%s' - shutting down\n",
-                       strsignal(si.ssi_signo));
+                printf("Received signal '%s' - ", strsignal(si.ssi_signo));
+                if (first_signal)
+                    printf("sending QUIT message (\"%s\")\n", quit_message);
+                else
+                    puts("disconnecting");
 
-                goto done;
+                if (first_signal) {
+                    write_msg(serv_fd, "QUIT :%s", quit_message);
+                    first_signal = false;
+                }
+                else
+                    goto done;
                 }
             }
         }

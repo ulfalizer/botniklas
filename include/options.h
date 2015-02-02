@@ -2,6 +2,7 @@
 extern const char *channel;
 extern const char *nick;
 extern const char *port;
+extern const char *quit_message;
 extern const char *realname;
 extern const char *server;
 extern const char *username;
