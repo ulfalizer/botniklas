@@ -6,7 +6,7 @@ headers := $(addprefix include/, commands.h common.h common_net.h \
   dynamic_string.h irc.h msgs.h msg_io.h options.h remind.h time_event.h)
 
 bot: $(sources) $(headers)
-	gcc -std=gnu11 -O3 -flto -Wall -Wextra -Wno-sign-compare -Wstrict-prototypes -Iinclude -o $@ $(sources) -lrt
+	gcc -std=gnu11 -O3 -flto -Wall -Wextra -Wno-sign-compare -Wredundant-decls -Wstrict-prototypes -Iinclude -o $@ $(sources) -lrt
 
 .PHONY: clean
 clean:

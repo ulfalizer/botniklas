@@ -4,8 +4,6 @@
 #define INITIAL_BUF_LEN 4096
 
 void string_init(String *s) {
-    void string_clear(String *s);
-
     s->buf = emalloc(INITIAL_BUF_LEN, "string init");
     s->buf_len = INITIAL_BUF_LEN;
 
@@ -19,9 +17,6 @@ void string_free(String *s) {
 // For ge_pow_2(), just to be pedantic.
 static_assert(sizeof(unsigned long long) >= sizeof(size_t),
   "ge_pow_2() argument might overflow");
-
-void string_append_v(String *s, const char *format, va_list ap);
-void string_set_v(String *s, const char *format, va_list ap);
 
 void string_set(String *s, const char *format, ...) {
     va_list ap;
