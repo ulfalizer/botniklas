@@ -25,7 +25,7 @@ void connect_to_irc_server(const char *host, const char *port, const char *nick,
 //
 // Returns false in case of an orderly shutdown from the server or a receive
 // error.
-bool process_msgs();
+bool process_msgs(void);
 
 // Converts error replies (400-599) to their symbolic constants
 // (401 -> "ERR_NOSUCHNICK", etc.).

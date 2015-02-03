@@ -23,13 +23,13 @@ typedef struct Time_event {
 // unlikely that we'll have a massive number of events.
 static Time_event *start = NULL;
 
-void init_time_event() {
+void init_time_event(void) {
     timer_fd = timerfd_create(CLOCK_REALTIME, TFD_CLOEXEC);
     if (timer_fd == -1)
         err("timerfd_create");
 }
 
-void free_time_event() {
+void free_time_event(void) {
     Time_event *next;
 
     if (close(timer_fd) == -1)
@@ -55,7 +55,7 @@ static void arm_timer(Time_event *event) {
         err("timerfd_settime (for time events)");
 }
 
-void handle_time_event() {
+void handle_time_event(void) {
     Time_event *old_start;
 
     // Handle the event.

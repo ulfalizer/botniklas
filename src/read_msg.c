@@ -18,7 +18,7 @@ static size_t start;
 static size_t end;
 static long page_size;
 
-static void test_mirroring() {
+static void test_mirroring(void) {
     // Sanity check. Initialize one mirror and verify contents of the other.
 
     for (long i = 0; i < page_size; ++i)
@@ -32,7 +32,7 @@ static void test_mirroring() {
 // (like in old versions), which is a bit cleaner as we do not have to touch
 // the filesystem or use POSIX shared memory. Unfortunately it's unsupported by
 // Valgrind and also deprecated.
-static void set_up_mirroring() {
+static void set_up_mirroring(void) {
     int fd;
     static char shm_tmp_name[64];
 
@@ -94,25 +94,25 @@ static void set_up_mirroring() {
     test_mirroring();
 }
 
-void msg_read_buf_init() {
+void msg_read_buf_init(void) {
     set_up_mirroring();
 
     start = 0;
     end = 0;
 }
 
-void msg_read_buf_free() {
+void msg_read_buf_free(void) {
     if (munmap(buf, 4*page_size) == -1)
         err("munmap (message read buffer)");
 }
 
-static void assert_index_sanity() {
+static void assert_index_sanity(void) {
     assert(end <= 2*page_size);
     assert(start <= end);
     assert(end - start <= page_size);
 }
 
-static void adjust_indices() {
+static void adjust_indices(void) {
     assert_index_sanity();
     if (start > page_size) {
         start -= page_size;
@@ -120,7 +120,7 @@ static void adjust_indices() {
     }
 }
 
-bool recv_msgs() {
+bool recv_msgs(void) {
     ssize_t n_recv;
 
     assert_index_sanity();

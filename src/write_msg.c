@@ -27,11 +27,11 @@ char *reply_target(char *src, char *target) {
 
 static String msg_write_buf;
 
-void msg_write_buf_init() {
+void msg_write_buf_init(void) {
     string_init(&msg_write_buf);
 }
 
-void msg_write_buf_free() {
+void msg_write_buf_free(void) {
     string_free(&msg_write_buf);
 }
 
@@ -45,7 +45,7 @@ void write_msg(const char *format, ...) {
     va_end(ap);
 }
 
-void begin_msg() {
+void begin_msg(void) {
     string_clear(&msg_write_buf);
 }
 
@@ -57,7 +57,7 @@ void append_msg(const char *format, ...) {
     va_end(ap);
 }
 
-void send_msg() {
+void send_msg(void) {
     string_append(&msg_write_buf, "\r\n");
     writen(serv_fd, string_get(&msg_write_buf), string_len(&msg_write_buf));
 }

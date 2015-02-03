@@ -5,13 +5,13 @@ extern int timer_fd;
 
 // Initializes the timed event infrastructure. Must be called before the
 // functions below.
-void init_time_event();
+void init_time_event(void);
 
 // Frees the resources associated with the timed event infrastructure.
-void free_time_event();
+void free_time_event(void);
 
 // Handles and removes the next chronological event.
-void handle_time_event();
+void handle_time_event(void);
 
 // Registers a function to be called at time 'when'. The function receives
 // 'data' as an argument.

@@ -33,7 +33,7 @@ static void add_epoll_read_fd(int epfd, int fd, uint32_t id,
 }
 
 // Initializes everything but the write buffer.
-static void init_rest() {
+static void init_rest(void) {
     sigset_t sig_mask;
 
     msg_read_buf_init();
@@ -71,7 +71,7 @@ static void init_rest() {
     add_epoll_read_fd(epoll_fd, signal_fd, SIGNAL, false);
 }
 
-static void deinit() {
+static void deinit(void) {
     msg_read_buf_free();
     msg_write_buf_free();
 
@@ -116,7 +116,7 @@ again:
                 // We currently assume that any notification (EPOLLIN,
                 // EPOLLERR, EPOLLHUP) will result in a non-blocking read,
                 // meaning we can handle errors inside process_msgs().
-                if (!process_msgs(serv_fd))
+                if (!process_msgs())
                     // Connection shutdown by the server or a receive error.
                     goto done;
                 break;

@@ -107,7 +107,7 @@ static bool split_msg(char *msg_str, IRC_msg *msg) {
     return true;
 }
 
-bool process_msgs() {
+bool process_msgs(void) {
     char *msg_str;
 
     if (!recv_msgs())
