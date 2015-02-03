@@ -1,6 +1,7 @@
 #include "common.h"
 #include "msg_io.h"
 #include "options.h"
+#include "remind.h"
 #include "time_event.h"
 
 // Reminder data is stored in a char array with the format
