@@ -13,6 +13,28 @@ static int epoll_fd;
 #define TIMER 1
 #define SIGNAL 2
 
+static void init(void) {
+    sigset_t sig_mask;
+
+    msg_read_buf_init();
+    msg_write_buf_init();
+
+    // Block termination signals to prevent their default action...
+    sigemptyset(&sig_mask);
+    sigaddset(&sig_mask, SIGINT); // Ctrl-C
+    sigaddset(&sig_mask, SIGTERM); // $ kill <bot>
+    if (sigprocmask(SIG_BLOCK, &sig_mask, NULL) == -1)
+        err("sigprocmask");
+
+    // ...and handle them synchronously with a signalfd instead.
+    signal_fd = signalfd(-1, &sig_mask, SFD_CLOEXEC);
+    if (signal_fd == -1)
+        err("signalfd");
+
+    // Create a timerfd to handle timer events synchronously.
+    init_time_event();
+}
+
 // Adds 'fd' to the monitored set for the epoll instance 'epfd'. We monitor for
 // data to read (EPOLLIN), hangups (EPOLLHUP), and errors (EPOLLERR), where the
 // latter two are implicit and don't need to be specified. 'id' is an event
@@ -32,33 +54,8 @@ static void add_epoll_read_fd(int epfd, int fd, uint32_t id,
             edge_triggered ? " with EPOLLET" : "");
 }
 
-// Initializes everything but the write buffer.
-static void init_rest(void) {
-    sigset_t sig_mask;
-
-    msg_read_buf_init();
-
-    // Create a signalfd to handle termination signals.
-
-    // Block the signals to prevent their default action, which is to
-    // immediately terminate the process.
-    sigemptyset(&sig_mask);
-    sigaddset(&sig_mask, SIGINT); // Ctrl-C
-    sigaddset(&sig_mask, SIGTERM); // $ kill <bot>
-    if (sigprocmask(SIG_BLOCK, &sig_mask, NULL) == -1)
-        err("sigprocmask");
-
-    signal_fd = signalfd(-1, &sig_mask, SFD_CLOEXEC);
-    if (signal_fd == -1)
-        err("signalfd");
-
-    // Create a timerfd to handle asynchronous timer events in a synchronous
-    // fashion.
-
-    init_time_event();
-
-    // Create an epoll instance to monitor the descriptors.
-
+// Creates an epoll instance to monitor the various event sources.
+static void init_epoll(void) {
     epoll_fd = epoll_create1(EPOLL_CLOEXEC);
     if (epoll_fd == -1)
         err("epoll_create");
@@ -90,11 +87,9 @@ int main(int argc, char *argv[]) {
 
     process_cmdline(argc, argv);
 
-    // We need to initialize the write buffer before calling
-    // connect_to_irc_server().
-    msg_write_buf_init();
+    init();
     connect_to_irc_server(server, port, nick, username, realname);
-    init_rest();
+    init_epoll();
 
     for (;;) {
         int n_events;
