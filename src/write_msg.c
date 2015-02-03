@@ -1,5 +1,6 @@
 #include "common.h"
 #include "dynamic_string.h"
+#include "irc.h"
 #include "msg_io.h"
 #include "options.h"
 
@@ -34,13 +35,13 @@ void msg_write_buf_free() {
     string_free(&msg_write_buf);
 }
 
-void write_msg(int fd, const char *format, ...) {
+void write_msg(const char *format, ...) {
     va_list ap;
 
     va_start(ap, format);
     string_set_v(&msg_write_buf, format, ap);
     string_append(&msg_write_buf, "\r\n");
-    writen(fd, string_get(&msg_write_buf), string_len(&msg_write_buf));
+    writen(serv_fd, string_get(&msg_write_buf), string_len(&msg_write_buf));
     va_end(ap);
 }
 
@@ -56,7 +57,7 @@ void append_msg(const char *format, ...) {
     va_end(ap);
 }
 
-void send_msg(int fd) {
+void send_msg() {
     string_append(&msg_write_buf, "\r\n");
-    writen(fd, string_get(&msg_write_buf), string_len(&msg_write_buf));
+    writen(serv_fd, string_get(&msg_write_buf), string_len(&msg_write_buf));
 }

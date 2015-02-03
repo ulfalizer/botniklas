@@ -4,6 +4,7 @@
 // "wraparound".
 
 #include "common.h"
+#include "irc.h"
 #include "msg_io.h"
 #include "options.h"
 
@@ -119,7 +120,7 @@ static void adjust_indices() {
     }
 }
 
-bool recv_msgs(int fd) {
+bool recv_msgs() {
     ssize_t n_recv;
 
     assert_index_sanity();
@@ -131,7 +132,7 @@ bool recv_msgs(int fd) {
              page_size);
 
 again:
-    n_recv = recv(fd, buf + end, page_size - (end - start), 0);
+    n_recv = recv(serv_fd, buf + end, page_size - (end - start), 0);
 
     if (n_recv == 0) {
         puts("The server closed the connection");

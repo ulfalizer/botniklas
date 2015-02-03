@@ -4,7 +4,6 @@
 #include "options.h"
 #include "time_event.h"
 
-static int serv_fd;
 static int signal_fd;
 
 static int epoll_fd;
@@ -94,7 +93,7 @@ int main(int argc, char *argv[]) {
     // We need to initialize the write buffer before calling
     // connect_to_irc_server().
     msg_write_buf_init();
-    serv_fd = connect_to_irc_server(server, port, nick, username, realname);
+    connect_to_irc_server(server, port, nick, username, realname);
     init_rest();
 
     for (;;) {
@@ -155,7 +154,7 @@ again:
                     puts("disconnecting");
 
                 if (first_signal) {
-                    write_msg(serv_fd, "QUIT :%s", quit_message);
+                    write_msg("QUIT :%s", quit_message);
                     first_signal = false;
                 }
                 else

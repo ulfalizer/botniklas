@@ -3,16 +3,18 @@
 #include "options.h"
 #include "time_event.h"
 
-typedef struct Reminder {
-    int serv_fd;
-    char msg[];
-} Reminder;
+// Reminder data is stored in a char array with the format
+// "<target of message (channel or nick)>\0<reminder message>\0"
 
 static void remind(void *data) {
-    Reminder *reminder = (Reminder*)data;
+    char *target_and_reminder = (char*)data;
 
-    write_msg(reminder->serv_fd, "PRIVMSG %s :REMINDER: %s", channel, reminder->msg);
-    free(reminder);
+    write_msg("PRIVMSG %s :REMINDER: %s",
+              // Target.
+              target_and_reminder,
+              // Message.
+              target_and_reminder + strlen(target_and_reminder) + 1);
+    free(target_and_reminder);
 }
 
 // Parses calendar time in the format "hh:mm:ss dd/MM yy", where yy is years
@@ -62,22 +64,23 @@ static time_t parse_time(const char **arg) {
     return mktime(&when_tm);
 }
 
-void handle_remind(int serv_fd, const char *arg, const char *reply_target) {
+void handle_remind(const char *arg, const char *reply_target) {
     time_t now;
-    Reminder *reminder;
+    char *reminder_data;
+    size_t target_len;
     size_t reminder_len;
     time_t trig_time;
 
     if (arg == NULL) {
-        write_msg(serv_fd, "PRIVMSG %s :Error: No time given.", reply_target);
+        write_msg("PRIVMSG %s :Error: No time given.", reply_target);
 
         return;
     }
 
     trig_time = parse_time(&arg);
     if (trig_time == -1) {
-        write_msg(serv_fd, "PRIVMSG %s :Error: Time is too wonky. Be more "
-                           "straightforward.", reply_target);
+        write_msg("PRIVMSG %s :Error: Time is too wonky. Be more "
+                  "straightforward.", reply_target);
 
         return;
     }
@@ -87,24 +90,28 @@ void handle_remind(int serv_fd, const char *arg, const char *reply_target) {
         err("time (remind command)");
 
     if (trig_time < now) {
-        write_msg(serv_fd, "PRIVMSG %s :Error: That's in the past.",
-                  reply_target);
+        write_msg("PRIVMSG %s :Error: That's in the past.", reply_target);
 
         return;
     }
 
     if (*arg++ == '\0') {
-        write_msg(serv_fd, "PRIVMSG %s :Error: Missing reminder message.",
+        write_msg("PRIVMSG %s :Error: Missing reminder message.",
                   reply_target);
 
         return;
     }
 
-    // Allocate reminder data.
-    reminder_len = strlen(arg) + 1;
-    reminder = emalloc(sizeof(*reminder) + reminder_len, "reminder data");
-    reminder->serv_fd = serv_fd;
-    memcpy(reminder->msg, arg, reminder_len);
+    // Allocate and initialize reminder data.
 
-    add_time_event(trig_time, remind, reminder);
+    target_len = strlen(reply_target) + 1;
+    reminder_len = strlen(arg) + 1;
+
+    reminder_data = emalloc(target_len + reminder_len, "reminder data");
+    memcpy(reminder_data, reply_target, target_len);
+    memcpy(reminder_data + target_len, arg, reminder_len);
+
+    // Register callback.
+
+    add_time_event(trig_time, remind, reminder_data);
 }

@@ -4,6 +4,8 @@
 #include "msgs.h"
 #include "options.h"
 
+int serv_fd;
+
 #define RET_INVALID_MSG(s)                        \
   do {                                            \
       warning("ignoring invalid message: %s", s); \
@@ -105,10 +107,10 @@ static bool split_msg(char *msg_str, IRC_msg *msg) {
     return true;
 }
 
-bool process_msgs(int serv_fd) {
+bool process_msgs() {
     char *msg_str;
 
-    if (!recv_msgs(serv_fd))
+    if (!recv_msgs())
         return false;
 
     while (get_msg(&msg_str)) {
@@ -124,22 +126,18 @@ bool process_msgs(int serv_fd) {
         if (!split_msg(msg_str, &msg))
             continue;
 
-        handle_msg(serv_fd, &msg);
+        handle_msg(&msg);
     }
 
     return true;
 }
 
-int connect_to_irc_server(const char *host, const char *port, const char *nick,
-                          const char *username, const char *realname) {
-    int serv_fd;
-
+void connect_to_irc_server(const char *host, const char *port, const char *nick,
+                           const char *username, const char *realname) {
     serv_fd = connect_to(host, port, SOCK_STREAM);
 
-    write_msg(serv_fd, "NICK %s", nick);
-    write_msg(serv_fd, "USER %s 0 * :%s", username, realname);
-
-    return serv_fd;
+    write_msg("NICK %s", nick);
+    write_msg("USER %s 0 * :%s", username, realname);
 }
 
 const char *irc_errnum_str(unsigned errnum) {

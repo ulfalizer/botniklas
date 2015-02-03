@@ -15,23 +15,23 @@ static void print_params(IRC_msg *msg) {
     }
 }
 
-static void handle_error(UNUSED int serv_fd, IRC_msg *msg) {
+static void handle_error(IRC_msg *msg) {
     fputs("warning: Received ERROR message. ", stderr);
     print_params(msg);
     putc('\n', stderr);
 }
 
-static void handle_ping(int serv_fd, IRC_msg *msg) {
-    write_msg(serv_fd, "PONG :%s", msg->params[0]);
+static void handle_ping(IRC_msg *msg) {
+    write_msg("PONG :%s", msg->params[0]);
 }
 
-static void handle_privmsg(int serv_fd, IRC_msg *msg) {
+static void handle_privmsg(IRC_msg *msg) {
     if (msg->params[1][0] == '!')
-        handle_cmd(serv_fd, msg->params[1] + 1, msg->prefix, msg->params[0]);
+        handle_cmd(msg->params[1] + 1, msg->prefix, msg->params[0]);
 }
 
-static void handle_welcome(int serv_fd, UNUSED IRC_msg *msg) {
-    write_msg(serv_fd, "JOIN %s", channel);
+static void handle_welcome(UNUSED IRC_msg *msg) {
+    write_msg("JOIN %s", channel);
 }
 
 static bool check_for_error_reply(IRC_msg *msg) {
@@ -58,7 +58,7 @@ static bool check_for_error_reply(IRC_msg *msg) {
 
 static const struct {
     const char *cmd;
-    void (*handler)(int serv_fd, IRC_msg *msg);
+    void (*handler)(IRC_msg *msg);
     size_t n_params_expected;
 } msgs[] = {
   { "001",     handle_welcome, DONT_CARE }, // RPL_WELCOME
@@ -66,7 +66,7 @@ static const struct {
   { "PING",    handle_ping,    1         },
   { "PRIVMSG", handle_privmsg, 2         } };
 
-void handle_msg(int serv_fd, IRC_msg *msg) {
+void handle_msg(IRC_msg *msg) {
     if (check_for_error_reply(msg))
         return;
 
@@ -84,7 +84,7 @@ void handle_msg(int serv_fd, IRC_msg *msg) {
                 break;
             }
 
-            msgs[i].handler(serv_fd, msg);
+            msgs[i].handler(msg);
 
             break;
         }
