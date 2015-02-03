@@ -18,8 +18,8 @@ void msg_read_buf_free(void);
 bool recv_msgs(void);
 
 // Extracts the first IRC message (terminated by '\r' or '\n') from the read
-// buffer and returns a pointer to it. Replaces the final '\r' or '\n' with
-// '\0' for ease of further processing.
+// buffer and returns a pointer to it. Replaces the terminating '\r' or '\n'
+// with '\0' for ease of further processing.
 //
 // 'msg' is set to NULL for empty messages and messages containing null bytes
 // (with a warning in the latter case). The result is not null-terminated in
