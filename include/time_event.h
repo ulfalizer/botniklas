@@ -1,7 +1,7 @@
+// Infrastructure for running functions at specific calendar times.
+
 // timerfd handle.
 extern int timer_fd;
-
-// Infrastructure for running functions at specific calendar times.
 
 // Initializes the timed event infrastructure. Must be called before the
 // functions below.
