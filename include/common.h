@@ -39,11 +39,13 @@ noreturn void err_exit(const char *format, ...)
 noreturn void err_exit_n(int errno_val, const char *format, ...)
   __attribute__((format(printf, 2, 3)));
 
-// Prints a message to stderr and exits with EXIT_FAILURE.
+// Prints a message to stderr (with a newline appended) and exits with
+// EXIT_FAILURE.
 noreturn void fail_exit(const char *format, ...)
   __attribute__((format(printf, 1, 2)));
 
-// Prints a warning ("warning: " followed by the message) to stderr.
+// Prints a warning ("warning: " followed by the message and a newline) to
+// stderr.
 void warning(const char *format, ...)
   __attribute__((format(printf, 1, 2)));
 
