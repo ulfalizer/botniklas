@@ -109,4 +109,5 @@ typedef unsigned char uc;
 // non-zero and that the result does not overflow.
 unsigned long long ge_pow_2(unsigned long long n);
 
+#include "common_file.h"
 #include "common_net.h"

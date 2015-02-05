@@ -10,14 +10,16 @@
 int timer_fd;
 
 typedef struct Time_event {
+    // Pointer to next chronological event or NULL in case of no more events.
     struct Time_event *next;
+    // Time of event.
     time_t when;
+    // Arguments passed to add_time_event().
     void (*handler)(void *data);
     void *data;
 } Time_event;
 
-// Points to a linked list of Time_event structures. The list is sorted in
-// chronological order.
+// Start of event list.
 //
 // A min-heap or the like would be more theoretically sound here, but it's
 // unlikely that we'll have a massive number of events.

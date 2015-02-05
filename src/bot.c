@@ -2,6 +2,7 @@
 #include "irc.h"
 #include "msg_io.h"
 #include "options.h"
+#include "state.h"
 #include "time_event.h"
 
 static int signal_fd;
@@ -91,11 +92,14 @@ int main(int argc, char *argv[]) {
     connect_to_irc_server(server, port, nick, username, realname);
     init_epoll();
 
+    // Restore saved state (e.g., reminders) from files.
+    restore_state();
+
     for (;;) {
         int n_events;
 
 again:
-        // Wait for messages from the server, timer expiration, and signals.
+        // Wait for messages from the server, timer expirations, and signals.
         n_events = epoll_wait(epoll_fd, events, ARRAY_LEN(events), -1);
         if (n_events == -1) {
             if (errno == EINTR)
