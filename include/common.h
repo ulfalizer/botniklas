@@ -7,6 +7,7 @@
 #include <inttypes.h>
 #include <limits.h>
 #include <math.h>
+#include <netdb.h>
 #include <pthread.h>
 #include <setjmp.h>
 #include <signal.h>
@@ -21,6 +22,7 @@
 #include <sys/epoll.h>
 #include <sys/mman.h>
 #include <sys/signalfd.h>
+#include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/timerfd.h>
 #include <sys/types.h>
@@ -89,25 +91,42 @@ typedef unsigned char uc;
           UNREACHABLE; \
   while (0)
 
-#define VERIFY(cond)                                                  \
-  if (!(cond))                                                        \
-      fail(__FILE__":"STRINGIFY(__LINE__)": "#cond" should be true");
-
-// Returns the number of arguments in the variable argument list. Supports zero
-// arguments via a GCC extension.
-#define N_ARGS(...) N_ARGS_HELPER(dummy, ##__VA_ARGS__, \
-  29, 28, 27, 26, 25, 24, 23, 22, 21, 20,               \
-  19, 18, 17, 16, 15, 14, 13, 12, 11, 10,               \
-   9,  8,  7,  6,  5,  4,  3,  2,  1,  0)
-#define N_ARGS_HELPER(dummy,                        \
-  n0 ,  n1,  n2,  n3,  n4,  n5,  n6,  n7,  n8, n9 , \
-  n10, n11, n12, n13, n14, n15, n16, n17, n18, n19, \
-  n20, n21, n22, n23, n24, n25, n26, n27, n28,   N, \
-  ...) N
-
 // Returns the least power of two greater than or equal to 'n'. Assumes 'n' is
 // non-zero and that the result does not overflow.
 unsigned long long ge_pow_2(unsigned long long n);
 
-#include "common_file.h"
-#include "common_net.h"
+//
+// File-related
+//
+
+// Returns the contents of 'filename'. The length in bytes is returned in
+// 'len'. 'exists' is set to false if (we can deduce that) the file does not
+// exist, and to true otherwise.
+//
+// On errors and if the file does not exist, returns NULL without modifying
+// 'len'.
+char *get_file_contents(const char *filename, size_t *len, bool *exists);
+
+//
+// Sockets-related
+//
+
+// Returns a string corresponding to a socket type (SOCK_STREAM, SOCK_DGRAM,
+// etc.).
+const char *socket_type_str(int type);
+
+// Connects to the internet host 'host' (specified e.g. via an IP address or
+// (DNS) hostname) using service 'service' (a port number or a service name
+// like "http" from /etc/services) and socket type 'type' (e.g. SOCK_STREAM or
+// SOCK_DGRAM). Returns a socket descriptor.
+//
+// Exits the program on errors.
+int connect_to(const char *host, const char *service, int type);
+
+// Reads 'n' bytes from file descriptor 'fd' into 'buf'. Handles partial reads
+// and signal interruption.
+ssize_t readn(int fd, void *buf, size_t n);
+
+// Writes 'n' bytes from file descriptor 'fd' into 'buf'. Handles partial
+// writes and signal interruption.
+void writen(int fd, const void *buf, size_t n);
