@@ -37,8 +37,8 @@ int connect_to(const char *host, const char *service, int type) {
 
     err = getaddrinfo(host, service, &hints, &ais);
     if (err != 0)
-        fail("getaddrinfo (host: '%s', service/port: '%s', type: %s): %s",
-             host, service, socket_type_str(type),
+        fail("Failed to look up '%s' (using service/port '%s' and socket "
+             "type %s): %s", host, service, socket_type_str(type),
              gai_strerror(err));
 
     // Try connecting to each of the returned addresses. Return on the first
@@ -51,7 +51,7 @@ int connect_to(const char *host, const char *service, int type) {
             goto success;
         close(peer_fd);
     }
-    fail("failed to connect to '%s' (using service/port '%s' and socket type "
+    fail("Failed to connect to '%s' (using service/port '%s' and socket type "
          "%s)", host, service, socket_type_str(type));
 
 success:
