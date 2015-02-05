@@ -37,7 +37,7 @@ static void save_reminder(time_t trig_time, const char *target,
 }
 
 // Reminder data is stored in a char array with the format
-// "<target of message (channel or nick)>\0<reminder message>\0"
+// "<target of message (channel or nick)>\0<reminder message>\0".
 
 // Returns the target from a packed target and reminder string.
 static char *target(char *target_and_reminder) {
