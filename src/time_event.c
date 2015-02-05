@@ -28,14 +28,14 @@ static Time_event *start = NULL;
 void init_time_event(void) {
     timer_fd = timerfd_create(CLOCK_REALTIME, TFD_CLOEXEC);
     if (timer_fd == -1)
-        err("timerfd_create");
+        err_exit("timerfd_create");
 }
 
 void free_time_event(void) {
     Time_event *next;
 
     if (close(timer_fd) == -1)
-        err("close timer_fd (for time events)");
+        err_exit("close timer_fd (for time events)");
 
     for (Time_event *event = start; event != NULL; event = next) {
         next = event->next;
@@ -54,7 +54,7 @@ static void arm_timer(Time_event *event) {
     time_spec.it_value.tv_nsec = 0;
 
     if (timerfd_settime(timer_fd, TFD_TIMER_ABSTIME, &time_spec, NULL) == -1)
-        err("timerfd_settime (for time events)");
+        err_exit("timerfd_settime (for time events)");
 }
 
 void handle_time_event(void) {

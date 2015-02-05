@@ -131,7 +131,7 @@ void handle_remind(const char *arg, const char *reply_target) {
 
     now = time(NULL);
     if (now == -1)
-        err("time (remind command)");
+        err_exit("time (remind command)");
 
     if (when < now) {
         write_msg("PRIVMSG %s :Error: That's in the past.", reply_target);
@@ -175,7 +175,7 @@ void restore_remind_state(void) {
 
     now = time(NULL);
     if (now == -1)
-        err("time (load reminders)");
+        err_exit("time (load reminders)");
 
     file_buf = get_file_contents(REMINDERS_FILE, &file_len, &file_exists);
     if (file_buf == NULL) {

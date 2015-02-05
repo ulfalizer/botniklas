@@ -9,21 +9,21 @@ noreturn static void common_fail(bool print_errno, int errno_val,
     exit(EXIT_FAILURE);
 }
 
-void err(const char *format, ...) {
+void err_exit(const char *format, ...) {
     va_list ap;
 
     va_start(ap, format);
     common_fail(true, errno, format, ap);
 }
 
-void err_n(int errno_val, const char *format, ...) {
+void err_exit_n(int errno_val, const char *format, ...) {
     va_list ap;
 
     va_start(ap, format);
     common_fail(true, errno_val, format, ap);
 }
 
-void fail(const char *format, ...) {
+void fail_exit(const char *format, ...) {
     va_list ap;
 
     va_start(ap, format);
@@ -44,7 +44,7 @@ void *emalloc(size_t size, const char *desc) {
     void *res = malloc(size);
 
     if (res == NULL)
-        err("malloc failed: %s", desc);
+        err_exit("malloc failed: %s", desc);
 
     return res;
 }
@@ -53,7 +53,7 @@ void *emalloc_align(size_t size, size_t align, const char *desc) {
     void *res;
 
     if (posix_memalign(&res, align, size) != 0)
-        err("posix_memalign failed: %s", desc);
+        err_exit("posix_memalign failed: %s", desc);
 
     return res;
 }
@@ -62,7 +62,7 @@ void *erealloc(void *ptr, size_t size, const char *desc) {
     void *res = realloc(ptr, size);
 
     if (res == NULL)
-        err("realloc failed: %s", desc);
+        err_exit("realloc failed: %s", desc);
 
     return res;
 }
@@ -71,7 +71,7 @@ char *estrdup(const char *s, const char *desc) {
     char *res = strdup(s);
 
     if (res == NULL)
-        err("strdup failed: %s", desc);
+        err_exit("strdup failed: %s", desc);
 
     return res;
 }

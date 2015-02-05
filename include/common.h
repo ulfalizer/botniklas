@@ -29,24 +29,26 @@
 #include <time.h>
 #include <unistd.h>
 
-// Exits unsuccessfully with a message to stderr.
-noreturn void fail(const char *format, ...)
+// Prints a message together with errno (with a newline appended) to stderr and
+// exits with EXIT_FAILURE.
+noreturn void err_exit(const char *format, ...)
   __attribute__((format(printf, 1, 2)));
 
-// Exits unsuccessfully with errno and a message to stderr.
-noreturn void err(const char *format, ...)
-  __attribute__((format(printf, 1, 2)));
-
-// Like err(), but uses the error code from 'errno_val' instead of errno.
+// Like err_exit(), but uses the error code from 'errno_val' instead of errno.
 // Suitable for pthreads functions.
-noreturn void err_n(int errno_val, const char *format, ...)
+noreturn void err_exit_n(int errno_val, const char *format, ...)
   __attribute__((format(printf, 2, 3)));
+
+// Prints a message to stderr and exits with EXIT_FAILURE.
+noreturn void fail_exit(const char *format, ...)
+  __attribute__((format(printf, 1, 2)));
 
 // Prints a warning ("warning: " followed by the message) to stderr.
 void warning(const char *format, ...)
   __attribute__((format(printf, 1, 2)));
 
-// Checked allocation functions.
+// These functions print 'desc' and exit with EXIT_FAILURE if the allocation
+// fails.
 void *emalloc(size_t size, const char *desc);
 void *emalloc_align(size_t size, size_t align, const char *desc);
 void *erealloc(void *ptr, size_t size, const char *desc);

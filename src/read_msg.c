@@ -25,7 +25,7 @@ static void test_mirroring(void) {
         buf[i] = i % 10;
     for (long i = 0; i < page_size; ++i)
         if (buf[page_size + i] != i % 10)
-            fail("message read buffer: memory mirror is broken");
+            fail_exit("message read buffer: memory mirror is broken");
 }
 
 // An alternative approach in this function would be to use remap_file_pages()
@@ -38,13 +38,13 @@ static void set_up_mirroring(void) {
 
     page_size = sysconf(_SC_PAGESIZE);
     if (page_size == -1)
-        err("sysconf(_SC_PAGESIZE) (message read buffer)");
+        err_exit("sysconf(_SC_PAGESIZE) (message read buffer)");
     // Enforce at least the limit from RFC 2812. Could be generalized to allow
     // a maximum length to be specified with the number of pages automatically
     // deduced.
     if (page_size < 512)
-        fail("message read buffer: page size too small (%lu bytes)\n",
-             page_size);
+        fail_exit("message read buffer: page size too small (%lu bytes)\n",
+                  page_size);
 
     // Create a dummy mapping to reserve a contiguous chunk of memory addresses
     // for the ring buffer. Reserve two extra pages as non-R/W guard pages to
@@ -52,7 +52,7 @@ static void set_up_mirroring(void) {
     buf = mmap(NULL, 4*page_size, PROT_NONE,
                MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
     if (buf == MAP_FAILED)
-        err("mmap setup (message read buffer)");
+        err_exit("mmap setup (message read buffer)");
 
     // Create a dummy POSIX shared memory object to hold the page that is
     // mirrored below.
@@ -67,29 +67,29 @@ static void set_up_mirroring(void) {
     // in-memory filesystem) on Linux.
     fd = shm_open(shm_tmp_name, O_RDWR | O_CREAT | O_EXCL, 0);
     if (fd == -1)
-        err("shm_open (message read buffer)");
+        err_exit("shm_open (message read buffer)");
 
     if (shm_unlink(shm_tmp_name) == -1)
-        err("shm_unlink (message read buffer)");
+        err_exit("shm_unlink (message read buffer)");
 
     // The mapped page must actually exist in the file. Otherwise we'll get a
     // SIGBUS when trying to access it.
     if (ftruncate(fd, page_size) == -1)
-        err("ftruncate (message read buffer)");
+        err_exit("ftruncate (message read buffer)");
 
     // Set up mirroring by mapping the page to two consecutive pages. This
     // needs MAP_SHARED to work.
 
     if (mmap(buf, page_size, PROT_READ | PROT_WRITE,
              MAP_FIXED | MAP_SHARED, fd, 0) == MAP_FAILED)
-        err("mmap first (message read buffer)");
+        err_exit("mmap first (message read buffer)");
 
     if (mmap(buf + page_size, page_size, PROT_READ | PROT_WRITE,
              MAP_FIXED | MAP_SHARED, fd, 0) == MAP_FAILED)
-        err("mmap second (message read buffer)");
+        err_exit("mmap second (message read buffer)");
 
     if (close(fd) == -1)
-        err("close (message read buffer)");
+        err_exit("close (message read buffer)");
 
     test_mirroring();
 }
@@ -103,7 +103,7 @@ void msg_read_buf_init(void) {
 
 void msg_read_buf_free(void) {
     if (munmap(buf, 4*page_size) == -1)
-        err("munmap (message read buffer)");
+        err_exit("munmap (message read buffer)");
 }
 
 static void assert_index_sanity(void) {
@@ -127,9 +127,8 @@ bool recv_msgs(void) {
 
     // Buffer full?
     if (end - start == page_size)
-        fail("received message longer than the read buffer "
-             "(the size of the read buffer is %zu bytes)",
-             page_size);
+        fail_exit("received message longer than the read buffer (the size of "
+                  "the read buffer is %zu bytes)", page_size);
 
 again:
     n_recv = recv(serv_fd, buf + end, page_size - (end - start), 0);
@@ -144,8 +143,8 @@ again:
         if (errno == EINTR)
             goto again;
 
-        printf("error in recv() while reading messages from server: %s\n",
-               strerror(errno));
+        warning("error in recv() while reading messages from server: %s\n",
+                strerror(errno));
 
         return false;
     }

@@ -23,8 +23,8 @@ const char *socket_type_str(int type) {
 int connect_to(const char *host, const char *service, int type) {
     struct addrinfo hints;
     struct addrinfo *ais;
-    int err;
     int peer_fd;
+    int res;
 
     clear(hints);
     // Accept both IPv4 and IPv6 connections.
@@ -35,11 +35,11 @@ int connect_to(const char *host, const char *service, int type) {
     hints.ai_flags = AI_ADDRCONFIG;
     hints.ai_protocol = 0;
 
-    err = getaddrinfo(host, service, &hints, &ais);
-    if (err != 0)
-        fail("Failed to look up '%s' (using service/port '%s' and socket "
-             "type %s): %s", host, service, socket_type_str(type),
-             gai_strerror(err));
+    res = getaddrinfo(host, service, &hints, &ais);
+    if (res != 0)
+        fail_exit("Failed to look up '%s' (using service/port '%s' and socket "
+                  "type %s): %s", host, service, socket_type_str(type),
+                  gai_strerror(res));
 
     // Try connecting to each of the returned addresses. Return on the first
     // successful connection.
@@ -51,8 +51,8 @@ int connect_to(const char *host, const char *service, int type) {
             goto success;
         close(peer_fd);
     }
-    fail("Failed to connect to '%s' (using service/port '%s' and socket type "
-         "%s)", host, service, socket_type_str(type));
+    fail_exit("Failed to connect to '%s' (using service/port '%s' and socket "
+              "type %s)", host, service, socket_type_str(type));
 
 success:
     freeaddrinfo(ais);
@@ -72,7 +72,7 @@ again:
         if (n_read == -1) {
             if (errno == EINTR)
                 goto again;
-            err("read");
+            err_exit("read");
         }
     }
 
@@ -92,7 +92,7 @@ again:
         if (n_written == -1) {
             if (errno == EINTR)
                 goto again;
-            err("write");
+            err_exit("write");
         }
     }
 }

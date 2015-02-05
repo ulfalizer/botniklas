@@ -25,12 +25,12 @@ static void init(void) {
     sigaddset(&sig_mask, SIGINT); // Ctrl-C
     sigaddset(&sig_mask, SIGTERM); // $ kill <bot>
     if (sigprocmask(SIG_BLOCK, &sig_mask, NULL) == -1)
-        err("sigprocmask");
+        err_exit("sigprocmask");
 
     // ...and handle them synchronously with a signalfd instead.
     signal_fd = signalfd(-1, &sig_mask, SFD_CLOEXEC);
     if (signal_fd == -1)
-        err("signalfd");
+        err_exit("signalfd");
 
     // Create a timerfd to handle timer events synchronously.
     init_time_event();
@@ -51,15 +51,15 @@ static void add_epoll_read_fd(int epfd, int fd, uint32_t id,
         ev.events |= EPOLLET;
 
     if (epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &ev) == -1)
-        err("epoll_ctl (EPOLL_CTL_ADD)%s",
-            edge_triggered ? " with EPOLLET" : "");
+        err_exit("epoll_ctl (EPOLL_CTL_ADD)%s",
+                 edge_triggered ? " with EPOLLET" : "");
 }
 
 // Creates an epoll instance to monitor the various event sources.
 static void init_epoll(void) {
     epoll_fd = epoll_create1(EPOLL_CLOEXEC);
     if (epoll_fd == -1)
-        err("epoll_create");
+        err_exit("epoll_create");
 
     add_epoll_read_fd(epoll_fd, serv_fd, SERVER, false);
     // Use edge-triggered notification to avoid having to read() the expiration
@@ -74,13 +74,13 @@ static void deinit(void) {
     msg_write_buf_free();
 
     if (close(serv_fd) == -1)
-        err("close (serv_fd)");
+        err_exit("close (serv_fd)");
     if (close(signal_fd) == -1)
-        err("close (signal_fd)");
+        err_exit("close (signal_fd)");
     free_time_event();
 
     if (close(epoll_fd) == -1)
-        err("close (epoll_fd)");
+        err_exit("close (epoll_fd)");
 }
 
 int main(int argc, char *argv[]) {
@@ -106,7 +106,7 @@ again:
                 // epoll_wait() generates EINTR if the process is stopped and
                 // resumed, so it's important that we handle this case.
                 goto again;
-            err("epoll_wait");
+            err_exit("epoll_wait");
         }
 
         for (int i = 0; i < n_events; ++i) {
@@ -123,8 +123,8 @@ again:
             case TIMER:
                 if (!(events[i].events & EPOLLIN) ||
                       events[i].events & EPOLLERR)
-                    fail("Got epoll error/weirdness related to timerfd. Not "
-                         "sure what's going on. Bailing out.");
+                    fail_exit("Got epoll error/weirdness related to timerfd. "
+                              "Not sure what's going on. Bailing out.");
                 handle_time_event();
                 break;
 
@@ -140,11 +140,11 @@ again:
 
                 if (!(events[i].events & EPOLLIN) ||
                       events[i].events & EPOLLERR)
-                    fail("Got epoll error/weirdness related to signalfd. Not "
-                         "sure what's going on. Bailing out.");
+                    fail_exit("Got epoll error/weirdness related to signalfd. "
+                              "Not sure what's going on. Bailing out.");
 
                 if (read(signal_fd, &si, sizeof si) == -1)
-                    err("read (signalfd)");
+                    err_exit("read (signalfd)");
 
                 printf("Received signal '%s' - ", strsignal(si.ssi_signo));
                 if (first_signal)
