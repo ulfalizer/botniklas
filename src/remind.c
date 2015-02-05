@@ -10,7 +10,7 @@
 #define REMINDERS_FILE "reminders"
 
 // Appends a reminder to the file.
-static void save_reminder(time_t trig_time, const char *target,
+static void save_reminder(time_t when, const char *target,
                           const char *message) {
     FILE *remind_file;
 
@@ -25,7 +25,7 @@ static void save_reminder(time_t trig_time, const char *target,
         return;
     }
 
-    if (fprintf(remind_file, "%lld %s %s\n", (long long)trig_time, target,
+    if (fprintf(remind_file, "%lld %s %s\n", (long long)when, target,
                 message) < 0)
         WARN_FAIL("fprintf failed: %s", strerror(errno));
 
@@ -111,7 +111,7 @@ void handle_remind(const char *arg, const char *reply_target) {
     char *reminder_data;
     size_t target_len;
     size_t reminder_len;
-    time_t trig_time;
+    time_t when;
 
     if (arg == NULL) {
         write_msg("PRIVMSG %s :Error: No time given.", reply_target);
@@ -121,8 +121,8 @@ void handle_remind(const char *arg, const char *reply_target) {
 
     cur = arg;
 
-    trig_time = parse_time(&cur);
-    if (trig_time == -1) {
+    when = parse_time(&cur);
+    if (when == -1) {
         write_msg("PRIVMSG %s :Error: Time is too wonky. Be more "
                   "straightforward.", reply_target);
 
@@ -133,7 +133,7 @@ void handle_remind(const char *arg, const char *reply_target) {
     if (now == -1)
         err("time (remind command)");
 
-    if (trig_time < now) {
+    if (when < now) {
         write_msg("PRIVMSG %s :Error: That's in the past.", reply_target);
 
         return;
@@ -149,7 +149,7 @@ void handle_remind(const char *arg, const char *reply_target) {
     ++cur;
 
     // Save the reminder to the reminders file.
-    save_reminder(trig_time, reply_target, cur);
+    save_reminder(when, reply_target, cur);
 
     // Allocate and initialize data for callback.
 
@@ -162,7 +162,7 @@ void handle_remind(const char *arg, const char *reply_target) {
 
     // Register callback.
 
-    add_time_event(trig_time, remind, reminder_data);
+    add_time_event(when, remind, reminder_data);
 }
 
 void restore_remind_state(void) {
