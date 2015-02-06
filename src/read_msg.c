@@ -143,8 +143,7 @@ again:
         if (errno == EINTR)
             goto again;
 
-        warning("error in recv() while reading messages from server: %s\n",
-                strerror(errno));
+        warning_err("recv() error while reading messages from server");
 
         return false;
     }

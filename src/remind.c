@@ -16,33 +16,31 @@ static void save_reminder(time_t when, const char *target,
     FILE *remind_file;
     int remind_file_fd;
 
-    #define WARN_FAIL(msg, ...)                                     \
-      warning("Failed to save reminder in '"REMINDERS_FILE"': "msg, \
-              ##__VA_ARGS__);
+    #define PREFIX "Failed to save reminder in '"REMINDERS_FILE"': "
 
     remind_file_fd = open_file(REMINDERS_FILE, APPEND);
     if (remind_file_fd == -1) {
-        WARN_FAIL("Failed to open file");
+        warning(PREFIX"open_file() failed");
 
         return;
     }
 
     remind_file = fdopen(remind_file_fd, "a");
     if (remind_file == NULL) {
-        WARN_FAIL("fdopen() failed: %s", strerror(errno));
+        warning_err(PREFIX"fd_open() failed");
 
         return;
     }
 
     if (fprintf(remind_file, "%lld %s %s\n", (long long)when, target,
                 message) < 0)
-        WARN_FAIL("fprintf() failed: %s", strerror(errno));
+        warning_err(PREFIX"fprintf() failed");
 
-    #undef WARN_FAIL
+    #undef PREFIX
 
     if (fclose(remind_file) == EOF)
-        warning("Failed to close saved reminders file ('"REMINDERS_FILE"'): "
-                "%s", strerror(errno));
+        warning_err("close() failed on saved reminders file "
+                    "('"REMINDERS_FILE"')");
 }
 
 // Reminder data is stored in a char array with the format

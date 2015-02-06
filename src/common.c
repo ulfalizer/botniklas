@@ -40,6 +40,16 @@ void warning(const char *format, ...) {
     va_end(ap);
 }
 
+void warning_err(const char *format, ...) {
+    va_list ap;
+
+    va_start(ap, format);
+    fputs("warning: ", stderr);
+    vfprintf(stderr, format, ap);
+    fprintf(stderr, ": %s\n", strerror(errno));
+    va_end(ap);
+}
+
 void *emalloc(size_t size, const char *desc) {
     void *res = malloc(size);
 

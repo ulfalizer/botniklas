@@ -47,8 +47,7 @@ int open_file(const char *filename, Open_mode mode) {
     // file-not-found.
 
     if (errno != ENOENT) {
-        warning("open() error on '%s': %s", path,
-                strerror(errno));
+        warning_err("open() error on '%s'", path);
 
         goto fail;
     }
@@ -68,7 +67,7 @@ int open_file(const char *filename, Open_mode mode) {
     // Temporarily truncate the filename part.
     path[data_dir_path_len] = '\0';
     if (mkdir(path, S_IRWXU) == -1) {
-        warning("mkdir() error on '%s': %s", path, strerror(errno));
+        warning_err("mkdir() error on '%s'", path);
 
         goto fail;
     }
@@ -86,8 +85,7 @@ int open_file(const char *filename, Open_mode mode) {
 
     // We give up.
 
-    warning("open() error on '%s' (after creating data directory): %s", path,
-            strerror(errno));
+    warning_err("open() error on '%s' (after creating data directory)", path);
 
 fail:
     free(path);
@@ -107,7 +105,7 @@ char *get_file_contents(const char *filename, size_t *len) {
         return NULL;
 
     if (fstat(fd, &fd_stat) == -1) {
-        warning("fstat() error on '%s': %s", filename, strerror(errno));
+        warning_err("fstat() error on '%s'", filename);
 
         goto err_close;
     }
@@ -142,15 +140,14 @@ again:
             if (errno == EINTR)
                 goto again;
 
-            warning("read() error on '%s': %s", filename, strerror(errno));
+            warning_err("read() error on '%s'", filename);
 
             goto err_free_close;
         }
     }
 
     if (close(fd) == -1)
-        warning("close() error after successful read on '%s': %s",
-                filename, strerror(errno));
+        warning_err("close() error after successful read on '%s'", filename);
 
     *len = n_read_tot;
 
@@ -160,8 +157,7 @@ err_free_close:
     free(buf);
 err_close:
     if (close(fd) == -1)
-        warning("close() error after failed read on '%s': %s",
-                filename, strerror(errno));
+        warning_err("close() error after failed read on '%s'", filename);
 
     return NULL;
 }
