@@ -30,7 +30,7 @@
 #include <unistd.h>
 
 // Prints a message together with errno (with a newline appended) to stderr and
-// exits with EXIT_FAILURE.
+// exit()s with EXIT_FAILURE.
 noreturn void err_exit(const char *format, ...)
   __attribute__((format(printf, 1, 2)));
 
@@ -39,7 +39,7 @@ noreturn void err_exit(const char *format, ...)
 noreturn void err_exit_n(int errno_val, const char *format, ...)
   __attribute__((format(printf, 2, 3)));
 
-// Prints a message to stderr (with a newline appended) and exits with
+// Prints a message to stderr (with a newline appended) and exit()s with
 // EXIT_FAILURE.
 noreturn void fail_exit(const char *format, ...)
   __attribute__((format(printf, 1, 2)));
