@@ -3,22 +3,41 @@
 
 #define DATA_DIR ".botniklas"
 
+static const char *get_home_dir(void) {
+    const char *home_dir;
+    struct passwd *pw;
+
+    // First try the HOME environment variable.
+    home_dir = getenv("HOME");
+    if (home_dir != NULL)
+        return home_dir;
+
+    // HOME is not set. Try the password file.
+    errno = 0;
+    pw = getpwuid(getuid());
+    if (pw != NULL)
+        return pw->pw_dir;
+
+    warning("Failed to get home directory using $HOME and the password file. "
+            "No data will be read or saved.");
+    if (errno != 0)
+        warning_err("getpwuid() error");
+
+    return NULL;
+}
+
 int open_file(const char *filename, Open_mode mode) {
     size_t data_dir_path_len;
     int fd;
-    char *home_dir;
+    const char *home_dir;
     int open_flags;
     char *path;
 
     // Construct path to file in 'path' (e.g., "/home/foo/.botniklas/file").
 
-    home_dir = getenv("HOME");
-    if (home_dir == NULL) {
-        warning("The HOME environment variable is not set. No data will be "
-                "read or saved.");
-
+    home_dir = get_home_dir();
+    if (home_dir == NULL)
         return -1;
-    }
 
     data_dir_path_len = strlen(home_dir) + 1 + strlen(DATA_DIR);
     path = emalloc(data_dir_path_len + 1 + strlen(filename) + 1, "file path");

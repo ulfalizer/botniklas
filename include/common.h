@@ -9,6 +9,7 @@
 #include <math.h>
 #include <netdb.h>
 #include <pthread.h>
+#include <pwd.h>
 #include <setjmp.h>
 #include <signal.h>
 #include <stdalign.h>
