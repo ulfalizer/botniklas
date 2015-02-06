@@ -1,4 +1,5 @@
 #include "common.h"
+#include "files.h"
 #include "msg_io.h"
 #include "options.h"
 #include "remind.h"
@@ -13,21 +14,29 @@
 static void save_reminder(time_t when, const char *target,
                           const char *message) {
     FILE *remind_file;
+    int remind_file_fd;
 
     #define WARN_FAIL(msg, ...)                                     \
       warning("Failed to save reminder in '"REMINDERS_FILE"': "msg, \
               ##__VA_ARGS__);
 
-    remind_file = fopen(REMINDERS_FILE, "a");
+    remind_file_fd = open_file(REMINDERS_FILE, APPEND);
+    if (remind_file_fd == -1) {
+        WARN_FAIL("Failed to open file");
+
+        return;
+    }
+
+    remind_file = fdopen(remind_file_fd, "a");
     if (remind_file == NULL) {
-        WARN_FAIL("fopen failed: %s", strerror(errno));
+        WARN_FAIL("fdopen() failed: %s", strerror(errno));
 
         return;
     }
 
     if (fprintf(remind_file, "%lld %s %s\n", (long long)when, target,
                 message) < 0)
-        WARN_FAIL("fprintf failed: %s", strerror(errno));
+        WARN_FAIL("fprintf() failed: %s", strerror(errno));
 
     #undef WARN_FAIL
 
@@ -169,7 +178,6 @@ void restore_remind_state(void) {
     char *cur; // Current parsing location.
     char *end; // End sentinel.
     char *file_buf;
-    bool file_exists;
     size_t file_len;
     time_t now;
 
@@ -177,13 +185,9 @@ void restore_remind_state(void) {
     if (now == -1)
         err_exit("time (load reminders)");
 
-    file_buf = get_file_contents(REMINDERS_FILE, &file_len, &file_exists);
-    if (file_buf == NULL) {
-        if (file_exists)
-            warning("Failed to read reminders from '"REMINDERS_FILE"'");
-
+    file_buf = get_file_contents(REMINDERS_FILE, &file_len);
+    if (file_buf == NULL)
         return;
-    }
 
     cur = file_buf;
     end = file_buf + file_len; // End sentinel.
