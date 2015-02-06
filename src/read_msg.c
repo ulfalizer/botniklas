@@ -43,7 +43,7 @@ static void set_up_mirroring(void) {
     // a maximum length to be specified with the number of pages automatically
     // deduced.
     if (page_size < 512)
-        fail_exit("message read buffer: page size too small (%lu bytes)\n",
+        fail_exit("message read buffer: page size too small (%ld bytes)",
                   page_size);
 
     // Create a dummy mapping to reserve a contiguous chunk of memory addresses
