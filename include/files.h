@@ -6,8 +6,8 @@ typedef enum Open_mode {
 
 // Opens 'filename' inside the data directory (something like
 // ~/.botniklas/<filename>), returning a file descriptor. Attempts to create
-// the data directory if it does not exist (as well as the file itself if
-// 'mode' is APPEND).
+// the data directory if it does not exist and 'mode' is APPEND (creating it on
+// a read is pointless).
 //
 // Returns -1 if there was an error or if 'mode' is READ and the file does not
 // exist.
