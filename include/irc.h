@@ -5,7 +5,7 @@ extern int serv_fd;
 #define MAX_PARAMS 20
 
 typedef struct IRC_msg {
-    char *prefix; // Set to null if no prefix exists.
+    char *prefix; // Set to NULL if no prefix exists.
     char *cmd;
     char *params[MAX_PARAMS];
     size_t n_params;
