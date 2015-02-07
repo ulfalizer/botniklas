@@ -9,27 +9,33 @@
 
 // TODO: Add some PRIVMSG-specific helpers.
 
-static void compliment(UNUSED char *arg, char *src, char *target) {
-    write_msg("PRIVMSG %s :You rock!", reply_target(src, target));
+static void compliment(const char *from, const char *to, const char *rep,
+                       const char *arg) {
+    write_msg("PRIVMSG %s :You rock!", rep);
 }
 
-static void echo(char *arg, char *src, char *target) {
-    if (arg != NULL && *arg != '\0')
-        write_msg("PRIVMSG %s :%s", reply_target(src, target), arg);
+static void echo(const char *from, const char *to, const char *rep,
+                 const char *arg) {
+    if (arg != NULL)
+        write_msg("PRIVMSG %s :%s", rep, arg);
 }
 
-static void remind(char *arg, char *src, char *target) {
-    handle_remind(arg, reply_target(src, target));
+static void remind(const char *from, const char *to, const char *rep,
+                   const char *arg) {
+    handle_remind(arg, rep);
 }
 
-static void commands(char *arg, char *src, char *target);
-static void help(char *arg, char *src, char *target);
+static void commands(const char *from, const char *to, const char *rep,
+                     const char *arg);
+static void help(const char *from, const char *to, const char *rep,
+                 const char *arg);
 
 #define CMD(cmd, help) { #cmd, cmd, help }
 
 static const struct {
     const char *cmd;
-    void (*handler)(char *arg, char *src, char *target);
+    void (*handler)(const char *from, const char *to, const char *rep,
+                    const char *arg);
     const char *help;
 } cmds[] = { CMD(commands,
                  "Lists available commands."),
@@ -43,49 +49,41 @@ static const struct {
                  "Usage: !remind hh:mm:ss dd/MM yy <text of reminder>. yy is "
                  "nr. of years past 2000.") };
 
-static void commands(UNUSED char *arg, char *src, char *target) {
+static void commands(const char *from, const char *to, const char *rep,
+                     const char *arg) {
     begin_msg();
-    append_msg("PRIVMSG %s :Available commands:", reply_target(src, target));
+    append_msg("PRIVMSG %s :Available commands:", rep);
     for (size_t i = 0; i < ARRAY_LEN(cmds); ++i)
         append_msg(" !%s", cmds[i].cmd);
     send_msg();
 }
 
-static void help(char *arg, char *src, char *target) {
+static void help(const char *from, const char *to, const char *rep,
+                 const char *arg) {
     if (arg == NULL) {
         write_msg("PRIVMSG %s :Usage: !help <command>. Use !commands to list "
-                  "commands.",
-                  reply_target(src, target));
+                  "commands.", rep);
 
         return;
     }
 
     for (size_t i = 0; i < ARRAY_LEN(cmds); ++i)
         if (strcmp(arg, cmds[i].cmd) == 0) {
-            write_msg("PRIVMSG %s :%s", reply_target(src, target),
-                      cmds[i].help);
+            write_msg("PRIVMSG %s :%s", rep, cmds[i].help);
 
             return;
         }
 
     write_msg("PRIVMSG %s :'%s': No such command. Use !command to list "
-              "commands.",
-              reply_target(src, target), arg);
+              "commands.", rep, arg);
 }
 
-void handle_cmd(char *cmd, char *src, char *target) {
-    for (size_t i = 0; i < ARRAY_LEN(cmds); ++i) {
-        size_t cmd_len = strlen(cmds[i].cmd);
+void handle_cmd(const char *from, const char *to, const char *rep,
+                const char *cmd, const char *arg) {
+    for (size_t i = 0; i < ARRAY_LEN(cmds); ++i)
+        if (strcmp(cmds[i].cmd, cmd) == 0) {
+            cmds[i].handler(from, to, rep, arg);
 
-        if (strncmp(cmds[i].cmd, cmd, cmd_len) == 0 &&
-            // The command must be followed by ' ' or '\0'.
-            (cmd[cmd_len] == ' ' || cmd[cmd_len] == '\0')) {
-
-            cmds[i].handler(// Argument.
-                            cmd[cmd_len] == '\0' ? NULL : cmd + cmd_len + 1,
-                            src,
-                            target);
             break;
         }
-    }
 }

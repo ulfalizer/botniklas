@@ -26,11 +26,40 @@ static void handle_ping(IRC_msg *msg) {
 }
 
 static void handle_privmsg(IRC_msg *msg) {
-    if (msg->params[1][0] == '!')
-        handle_cmd(msg->params[1] + 1, msg->prefix, msg->params[0]);
+    if (msg->params[1][0] == '!') {
+        char *arg;
+        char *ex_mark;
+
+        // Ignore PRIVMSGs where the prefix is missing or we can't extract a
+        // nick from it.
+        if (msg->prefix == NULL ||
+            (ex_mark = strchr(msg->prefix, '!')) == NULL)
+            return;
+
+        // Truncate prefix to just nick.
+        *ex_mark = '\0';
+
+        // The argument, if any, starts after the first space. We also treat an
+        // empty argument as "no argument" as there's probably no sensible use
+        // case there.
+        arg = strchr(msg->params[1], ' ');
+        if (arg != NULL) {
+            *arg++ = '\0';
+            if (*arg == '\0')
+                arg = NULL;
+        }
+
+        handle_cmd(msg->prefix, msg->params[0],
+                   // The "natural" reply target, passed as a convenience. This
+                   // is either a channel for messages to a channel or the
+                   // sending nick for messages directly to the bot.
+                   is_channel(msg->params[0]) ? msg->params[0] : msg->prefix,
+                   msg->params[1] + 1, // Command.
+                   arg);
+    }
 }
 
-static void handle_welcome(UNUSED IRC_msg *msg) {
+static void handle_welcome(IRC_msg *msg) {
     write_msg("JOIN %s", channel);
 }
 

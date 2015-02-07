@@ -34,10 +34,6 @@ bool get_msg(char **msg);
 // IRC message writing.
 //
 
-// Returns the target to which a reply should be sent. Private messages
-// generate replies directly to the user.
-char *reply_target(char *src, char *target);
-
 // Initializes the write buffer. Must be called before the functions below.
 void msg_write_buf_init(void);
 

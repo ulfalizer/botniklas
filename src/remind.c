@@ -88,12 +88,12 @@ static time_t parse_time(const char **arg) {
 
     *arg += strlen("hh:mm:ss dd/MM yy");
 
-    when_tm.tm_hour = 10*(s[0] - '0') + (s[1] - '0');
-    when_tm.tm_min  = 10*(s[3] - '0') + (s[4] - '0');
-    when_tm.tm_sec  = 10*(s[6] - '0') + (s[7] - '0');
-    when_tm.tm_mday = 10*(s[9] - '0') + (s[10] - '0');
-    when_tm.tm_mon  = 10*(s[12] - '0') + (s[13] - '0') - 1;
-    when_tm.tm_year = 100 + 10*(s[15] - '0') + (s[16] - '0');
+    when_tm.tm_hour  = 10*(s[0] - '0') + (s[1] - '0');
+    when_tm.tm_min   = 10*(s[3] - '0') + (s[4] - '0');
+    when_tm.tm_sec   = 10*(s[6] - '0') + (s[7] - '0');
+    when_tm.tm_mday  = 10*(s[9] - '0') + (s[10] - '0');
+    when_tm.tm_mon   = 10*(s[12] - '0') + (s[13] - '0') - 1;
+    when_tm.tm_year  = 100 + 10*(s[15] - '0') + (s[16] - '0');
     when_tm.tm_isdst = -1; // Use DST information from locale.
 
     // Do some crude sanity checking before passing the time on to mktime(). It
@@ -112,7 +112,7 @@ static time_t parse_time(const char **arg) {
     return mktime(&when_tm);
 }
 
-void handle_remind(const char *arg, const char *reply_target) {
+void handle_remind(const char *arg, const char *rep) {
     const char *cur;
     time_t now;
     char *reminder_data;
@@ -121,7 +121,7 @@ void handle_remind(const char *arg, const char *reply_target) {
     time_t when;
 
     if (arg == NULL) {
-        write_msg("PRIVMSG %s :Error: No time given.", reply_target);
+        write_msg("PRIVMSG %s :Error: No time given.", rep);
 
         return;
     }
@@ -131,7 +131,7 @@ void handle_remind(const char *arg, const char *reply_target) {
     when = parse_time(&cur);
     if (when == -1) {
         write_msg("PRIVMSG %s :Error: Time is too wonky. Be more "
-                  "straightforward.", reply_target);
+                  "straightforward.", rep);
 
         return;
     }
@@ -141,14 +141,14 @@ void handle_remind(const char *arg, const char *reply_target) {
         err_exit("time (remind command)");
 
     if (when < now) {
-        write_msg("PRIVMSG %s :Error: That's in the past.", reply_target);
+        write_msg("PRIVMSG %s :Error: That's in the past.", rep);
 
         return;
     }
 
     if (cur[0] == '\0' || cur[1] == '\0') {
         write_msg("PRIVMSG %s :Error: Missing or empty reminder message.",
-                  reply_target);
+                  rep);
 
         return;
     }
@@ -156,15 +156,15 @@ void handle_remind(const char *arg, const char *reply_target) {
     ++cur;
 
     // Save the reminder to the reminders file.
-    save_reminder(when, reply_target, cur);
+    save_reminder(when, rep, cur);
 
     // Allocate and initialize data for callback.
 
-    target_len = strlen(reply_target) + 1;
+    target_len = strlen(rep) + 1;
     reminder_len = strlen(cur) + 1;
 
     reminder_data = emalloc(target_len + reminder_len, "reminder data");
-    memcpy(reminder_data, reply_target, target_len);
+    memcpy(reminder_data, rep, target_len);
     memcpy(reminder_data + target_len, cur, reminder_len);
 
     // Register callback.

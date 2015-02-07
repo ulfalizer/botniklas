@@ -4,27 +4,6 @@
 #include "msg_io.h"
 #include "options.h"
 
-// TODO: Investigate robustness.
-char *reply_target(char *src, char *target) {
-    char *end;
-
-    if (strcmp(target, nick) == 0) {
-        // Private message. See if 'src' contains the nick of the sender. We
-        // expect the nick to appear before the first '!', if any.
-
-        end = strchr(src, '!');
-        if (end == NULL)
-            return target;
-
-        *end = '\0';
-
-        // Return nick.
-        return src;
-    }
-
-    return target;
-}
-
 static String msg_write_buf;
 
 void msg_write_buf_init(void) {

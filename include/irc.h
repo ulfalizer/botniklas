@@ -27,6 +27,9 @@ void connect_to_irc_server(const char *host, const char *port, const char *nick,
 // error.
 bool process_msgs(void);
 
+// Returns true if 'channel_or_nick' starts with '&', '#', '+', or '!'.
+bool is_channel(const char *channel_or_nick);
+
 // Converts error replies (400-599) to their symbolic constants
 // (401 -> "ERR_NOSUCHNICK", etc.).
 const char *irc_errnum_str(unsigned errnum);

@@ -140,6 +140,13 @@ void connect_to_irc_server(const char *host, const char *port, const char *nick,
     write_msg("USER %s 0 * :%s", username, realname);
 }
 
+bool is_channel(const char *channel_or_nick) {
+    switch (channel_or_nick[0]) {
+    case '&': case '#': case '+': case '!': return true;
+    default: return false;
+    }
+}
+
 const char *irc_errnum_str(unsigned errnum) {
     #define C(val, s) case val: return s
 
