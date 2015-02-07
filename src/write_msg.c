@@ -40,3 +40,18 @@ void send_msg(void) {
     string_append(&msg_write_buf, "\r\n");
     writen(serv_fd, string_get(&msg_write_buf), string_len(&msg_write_buf));
 }
+
+void say(const char *to, const char *format, ...) {
+    va_list ap;
+
+    va_start(ap, format);
+    string_set(&msg_write_buf, "PRIVMSG %s :", to);
+    string_append_v(&msg_write_buf, format, ap);
+    string_append(&msg_write_buf, "\r\n");
+    writen(serv_fd, string_get(&msg_write_buf), string_len(&msg_write_buf));
+    va_end(ap);
+}
+
+void begin_say(const char *to) {
+    string_set(&msg_write_buf, "PRIVMSG %s :", to);
+}

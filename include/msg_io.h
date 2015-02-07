@@ -57,3 +57,12 @@ void append_msg(const char *format, ...)
 // Sends the IRC message from the write buffer to the server. "\r\n" is
 // appended automatically.
 void send_msg(void);
+
+// Helpers for sending PRIVMSG messages (plain messages to channels or nicks).
+// Expands to 'PRIVMSG <to> :<message>'.
+
+void say(const char *to, const char *format, ...)
+  __attribute__((format(printf, 2, 3)));
+
+// Like begin_msg(), but for starting a PRIVMSG.
+void begin_say(const char *to);

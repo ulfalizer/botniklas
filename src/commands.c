@@ -7,17 +7,15 @@
 // Command implementations. If the command is followed by a space, 'arg'
 // contains the text after that. Otherwise, 'arg' is NULL.
 
-// TODO: Add some PRIVMSG-specific helpers.
-
 static void compliment(const char *from, const char *to, const char *rep,
                        const char *arg) {
-    write_msg("PRIVMSG %s :You rock!", rep);
+    say(rep, "You rock!");
 }
 
 static void echo(const char *from, const char *to, const char *rep,
                  const char *arg) {
     if (arg != NULL)
-        write_msg("PRIVMSG %s :%s", rep, arg);
+        say(rep, "%s", arg);
 }
 
 static void remind(const char *from, const char *to, const char *rep,
@@ -51,8 +49,8 @@ static const struct {
 
 static void commands(const char *from, const char *to, const char *rep,
                      const char *arg) {
-    begin_msg();
-    append_msg("PRIVMSG %s :Available commands:", rep);
+    begin_say(rep);
+    append_msg("Available commands:");
     for (size_t i = 0; i < ARRAY_LEN(cmds); ++i)
         append_msg(" !%s", cmds[i].cmd);
     send_msg();
@@ -61,21 +59,19 @@ static void commands(const char *from, const char *to, const char *rep,
 static void help(const char *from, const char *to, const char *rep,
                  const char *arg) {
     if (arg == NULL) {
-        write_msg("PRIVMSG %s :Usage: !help <command>. Use !commands to list "
-                  "commands.", rep);
+        say(rep, "Usage: !help <command>. Use !commands to list commands.");
 
         return;
     }
 
     for (size_t i = 0; i < ARRAY_LEN(cmds); ++i)
         if (strcmp(arg, cmds[i].cmd) == 0) {
-            write_msg("PRIVMSG %s :%s", rep, cmds[i].help);
+            say(rep, "%s", cmds[i].help);
 
             return;
         }
 
-    write_msg("PRIVMSG %s :'%s': No such command. Use !command to list "
-              "commands.", rep, arg);
+    say(rep, "'%s': No such command. Use !commands to list commands.", arg);
 }
 
 void handle_cmd(const char *from, const char *to, const char *rep,

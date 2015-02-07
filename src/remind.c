@@ -60,8 +60,8 @@ static char *reminder(char *target_and_reminder) {
 static void remind(void *data) {
     char *target_and_reminder = (char*)data;
 
-    write_msg("PRIVMSG %s :REMINDER: %s", target(target_and_reminder),
-              reminder(target_and_reminder));
+    say(target(target_and_reminder), "REMINDER: %s",
+        reminder(target_and_reminder));
     free(target_and_reminder);
 }
 
@@ -121,7 +121,7 @@ void handle_remind(const char *arg, const char *rep) {
     time_t when;
 
     if (arg == NULL) {
-        write_msg("PRIVMSG %s :Error: No time given.", rep);
+        say(rep, "Error: No time given.");
 
         return;
     }
@@ -130,8 +130,7 @@ void handle_remind(const char *arg, const char *rep) {
 
     when = parse_time(&cur);
     if (when == -1) {
-        write_msg("PRIVMSG %s :Error: Time is too wonky. Be more "
-                  "straightforward.", rep);
+        say(rep, "Error: Time is too wonky. Be more straightforward.");
 
         return;
     }
@@ -141,14 +140,13 @@ void handle_remind(const char *arg, const char *rep) {
         err_exit("time (remind command)");
 
     if (when < now) {
-        write_msg("PRIVMSG %s :Error: That's in the past.", rep);
+        say(rep, "Error: That's in the past.");
 
         return;
     }
 
     if (cur[0] == '\0' || cur[1] == '\0') {
-        write_msg("PRIVMSG %s :Error: Missing or empty reminder message.",
-                  rep);
+        say(rep, "Error: Missing or empty reminder message.");
 
         return;
     }
