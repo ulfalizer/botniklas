@@ -1,11 +1,10 @@
+// Command implementations.
+
 #include "common.h"
 #include "commands.h"
 #include "msg_io.h"
 #include "options.h"
 #include "remind.h"
-
-// Command implementations. If the command is followed by a space, 'arg'
-// contains the text after that. Otherwise, 'arg' is NULL.
 
 static void compliment(const char *from, const char *to, const char *rep,
                        const char *arg) {
