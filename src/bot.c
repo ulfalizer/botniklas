@@ -34,6 +34,9 @@ static void init(void) {
 
     // Create a timerfd to handle timer events synchronously.
     init_time_event();
+
+    // Restore saved state (e.g., reminders) from files.
+    restore_state();
 }
 
 // Adds 'fd' to the monitored set for the epoll instance 'epfd'. We monitor for
@@ -91,9 +94,6 @@ int main(int argc, char *argv[]) {
     init();
     connect_to_irc_server(server, port, nick, username, realname);
     init_epoll();
-
-    // Restore saved state (e.g., reminders) from files.
-    restore_state();
 
     for (;;) {
         int n_events;
