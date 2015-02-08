@@ -92,6 +92,10 @@ void log_kick(const char *from, const char *channel, const char *kickee,
         log_append("%s  %s was kicked by %s: %s", channel, kickee, from, text);
 }
 
+void log_nick(const char *from, const char *to) {
+    log_append("%s changed nick to %s", from, to);
+}
+
 void log_part(const char *from, const char *channel) {
     log_append("%s  %s left", channel, from);
 }

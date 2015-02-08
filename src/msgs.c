@@ -51,6 +51,13 @@ static void handle_kick(IRC_msg *msg) {
              msg->n_params == 2 ? NULL : msg->params[2]);
 }
 
+static void handle_nick(IRC_msg *msg) {
+    if (!truncate_prefix_to_nick(msg))
+        return;
+
+    log_nick(msg->prefix, msg->params[0]);
+}
+
 static void handle_part(IRC_msg *msg) {
     if (!truncate_prefix_to_nick(msg))
         return;
@@ -137,6 +144,7 @@ static const struct {
   { "ERROR",   handle_error,   1, 1        },
   { "JOIN",    handle_join,    1, 1        },
   { "KICK",    handle_kick,    2, 3        },
+  { "NICK",    handle_nick,    1, 1        },
   { "PART",    handle_part,    1, 1        },
   { "PING",    handle_ping,    1, 1        },
   { "PRIVMSG", handle_privmsg, 2, 2        },

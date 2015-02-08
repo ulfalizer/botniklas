@@ -5,6 +5,9 @@ void log_join(const char *from, const char *channel);
 void log_kick(const char *from, const char *channel, const char *kickee,
               const char *text);
 
+// Appends a NICK to the chat log.
+void log_nick(const char *from, const char *to);
+
 // Appends a PART to the chat log.
 void log_part(const char *from, const char *channel);
 
