@@ -87,8 +87,12 @@ static bool extract_msg_cmd(char **cur, char **cmd) {
     return true;
 }
 
-// Extracts the parameters, assumed to start at 'cur'. Returns false if a
-// malformed parameter is found or the command has too many parameters.
+// Extracts the message parameters starting at 'cur', which is assumed to point
+// to the space before the first parameter (or to the '\0' after the command if
+// there are no parameters).
+//
+// Returns false if a malformed parameter is found or the command has too many
+// parameters.
 static bool extract_msg_params(char *cur, char *params[], size_t *n_params) {
     *n_params = 0;
 
