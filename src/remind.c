@@ -128,8 +128,12 @@ void handle_remind(const char *arg, const char *rep) {
     }
 
     now = time(NULL);
-    if (now == -1)
-        err_exit("time (remind command)");
+    if (now == -1) {
+        warning_err("time() failed (add reminder)");
+        say(rep, "Failed to add reminder due to unexpected error.");
+
+        return;
+    }
 
     if (when < now) {
         say(rep, "Error: That's in the past.");
