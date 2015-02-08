@@ -80,33 +80,43 @@ close_log:
         warning_err("fclose() failed on chat log file ('"CHAT_LOG_FILE"')");
 }
 
-void log_join(const char *from, const char *channel) {
-    log_append("%s  %s joined", channel, from);
+void log_join(const char *nick, const char *user, const char *host,
+              const char *channel) {
+    log_append("%s  %s (%s@%s) joined", channel, nick, user,
+               host ? host : "<unknown>");
 }
 
-void log_kick(const char *from, const char *channel, const char *kickee,
+void log_kick(const char *nick, const char *channel, const char *kickee,
               const char *text) {
     if (text == NULL)
-        log_append("%s  %s was kicked by %s", channel, kickee, from);
+        log_append("%s  %s was kicked by %s", channel, kickee, nick);
     else
-        log_append("%s  %s was kicked by %s: %s", channel, kickee, from, text);
+        log_append("%s  %s was kicked by %s: %s", channel, kickee, nick, text);
 }
 
-void log_nick(const char *from, const char *to) {
-    log_append("%s changed nick to %s", from, to);
+void log_nick(const char *nick, const char *to) {
+    log_append("%s changed nick to %s", nick, to);
 }
 
-void log_part(const char *from, const char *channel) {
-    log_append("%s  %s left", channel, from);
-}
-
-void log_privmsg(const char *from, const char *to, const char *text) {
-    log_append("%s  <%s> %s", to, from, text);
-}
-
-void log_quit(const char *from, const char *text) {
+void log_part(const char *nick, const char *user, const char *host,
+              const char *channel, const char *text) {
     if (text == NULL)
-        log_append("%s quit", from);
+        log_append("%s  %s (%s@%s) left", channel, nick, user,
+                   host ? host : "<unknown>");
     else
-        log_append("%s quit: %s", from, text);
+        log_append("%s  %s (%s@%s) left: %s", channel, nick, user,
+                   host ? host : "<unknown>", text);
+}
+
+void log_privmsg(const char *nick, const char *to, const char *text) {
+    log_append("%s  <%s> %s", to, nick, text);
+}
+
+void log_quit(const char *nick, const char *user, const char *host,
+              const char *text) {
+    if (text == NULL)
+        log_append("%s (%s@%s) quit", nick, user, host ? host : "<unknown>");
+    else
+        log_append("%s (%s@%s) quit: %s", nick, user,
+                   host ? host : "<unknown>", text);
 }

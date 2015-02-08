@@ -16,53 +16,26 @@ static void print_params(IRC_msg *msg) {
     }
 }
 
-// TODO: Later on we might want to parse out the nick and host and save them in
-// IRC_msg instead.
-static bool truncate_prefix_to_nick(IRC_msg *msg) {
-    char *ex_mark;
-
-    // Return an error if the prefix is missing or we can't extract a nick from
-    // it.
-    if (msg->prefix == NULL ||
-        (ex_mark = strchr(msg->prefix, '!')) == NULL)
-        return false;
-
-    *ex_mark = '\0';
-
-    return true;
-}
-
 static void handle_error(IRC_msg *msg) {
     warning("Received ERROR message: %s", msg->params[0]);
 }
 
 static void handle_join(IRC_msg *msg) {
-    if (!truncate_prefix_to_nick(msg))
-        return;
-
-    log_join(msg->prefix, msg->params[0]);
+    log_join(msg->nick, msg->user, msg->host, msg->params[0]);
 }
 
 static void handle_kick(IRC_msg *msg) {
-    if (!truncate_prefix_to_nick(msg))
-        return;
-
-    log_kick(msg->prefix, msg->params[0], msg->params[1],
+    log_kick(msg->nick, msg->params[0], msg->params[1],
              msg->n_params == 2 ? NULL : msg->params[2]);
 }
 
 static void handle_nick(IRC_msg *msg) {
-    if (!truncate_prefix_to_nick(msg))
-        return;
-
-    log_nick(msg->prefix, msg->params[0]);
+    log_nick(msg->nick, msg->params[0]);
 }
 
 static void handle_part(IRC_msg *msg) {
-    if (!truncate_prefix_to_nick(msg))
-        return;
-
-    log_part(msg->prefix, msg->params[0]);
+    log_part(msg->nick, msg->user, msg->host, msg->params[0],
+             msg->n_params == 1 ? NULL : msg->params[1]);
 }
 
 static void handle_ping(IRC_msg *msg) {
@@ -70,10 +43,7 @@ static void handle_ping(IRC_msg *msg) {
 }
 
 static void handle_privmsg(IRC_msg *msg) {
-    if (!truncate_prefix_to_nick(msg))
-        return;
-
-    log_privmsg(msg->prefix, msg->params[0], msg->params[1]);
+    log_privmsg(msg->nick, msg->params[0], msg->params[1]);
 
     // Look for bot command.
     if (msg->params[1][0] == '!') {
@@ -101,10 +71,7 @@ static void handle_privmsg(IRC_msg *msg) {
 }
 
 static void handle_quit(IRC_msg *msg) {
-    if (!truncate_prefix_to_nick(msg))
-        return;
-
-    log_quit(msg->prefix,
+    log_quit(msg->nick, msg->user, msg->host,
              msg->n_params == 0 ? NULL : msg->params[0]);
 }
 
@@ -137,18 +104,23 @@ static bool check_for_error_reply(IRC_msg *msg) {
 static const struct {
     const char *cmd;
     void (*handler)(IRC_msg *msg);
+    // Minimum number of parameters we expect in a valid message.
     size_t n_params_min;
+    // Maximum number of parameters we expect in a valid message.
     size_t n_params_max;
+    // true if we expect the message to include the sender's nickname in the
+    // prefix.
+    bool needs_nick;
 } msgs[] = {
-  { "001",     handle_welcome, 0, SIZE_MAX }, // RPL_WELCOME
-  { "ERROR",   handle_error,   1, 1        },
-  { "JOIN",    handle_join,    1, 1        },
-  { "KICK",    handle_kick,    2, 3        },
-  { "NICK",    handle_nick,    1, 1        },
-  { "PART",    handle_part,    1, 1        },
-  { "PING",    handle_ping,    1, 1        },
-  { "PRIVMSG", handle_privmsg, 2, 2        },
-  { "QUIT",    handle_quit,    0, 1        } };
+  { "001",     handle_welcome, 0, SIZE_MAX, false }, // RPL_WELCOME
+  { "ERROR",   handle_error,   1, 1       , false },
+  { "JOIN",    handle_join,    1, 1       , true  },
+  { "KICK",    handle_kick,    2, 3       , true  },
+  { "NICK",    handle_nick,    1, 1       , true  },
+  { "PART",    handle_part,    1, 2       , true  },
+  { "PING",    handle_ping,    1, 1       , false },
+  { "PRIVMSG", handle_privmsg, 2, 2       , true  },
+  { "QUIT",    handle_quit,    0, 1       , true  } };
 
 void handle_msg(IRC_msg *msg) {
     if (check_for_error_reply(msg))
@@ -167,6 +139,14 @@ void handle_msg(IRC_msg *msg) {
                     exit(EXIT_FAILURE);
 
                 break;
+            }
+
+            if (msgs[i].needs_nick && msg->nick == NULL) {
+                warning("Ignoring %s lacking prefix with nickname.",
+                        msg->cmd);
+
+                if (exit_on_invalid_msg)
+                    exit(EXIT_FAILURE);
             }
 
             msgs[i].handler(msg);

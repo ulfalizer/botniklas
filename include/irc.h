@@ -5,7 +5,20 @@ extern int serv_fd;
 #define MAX_PARAMS 20
 
 typedef struct IRC_msg {
-    char *prefix; // Set to NULL if no prefix exists.
+    // Set to NULL if the message has no prefix.
+    char *prefix;
+
+    // Set if the message has a prefix and it contains a nickname, username, or
+    // host. Missing components are set to NULL. The nickname/username/host
+    // separators in 'prefix' are replaced by null terminators (which is okay
+    // since these fields should be used instead when applicable).
+    //
+    // Due to how we detect nicknames, 'user' is currently always set if 'nick'
+    // is set.
+    char *nick;
+    char *user;
+    char *host;
+
     char *cmd;
     char *params[MAX_PARAMS];
     size_t n_params;

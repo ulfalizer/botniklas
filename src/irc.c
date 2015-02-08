@@ -90,6 +90,36 @@ static bool extract_msg_params(char *cur, char *params[], size_t *n_params) {
     return true;
 }
 
+// Extracts the nickname, username, and host from 'prefix'. Sets missing
+// components to NULL.
+static void extract_prefix_components(char *prefix, char **nick, char **user,
+                                      char **host) {
+    char *cur;
+
+    // Assume nicknames are always followed by '!'.
+    if (prefix == NULL || (cur = strchr(prefix, '!')) == NULL) {
+        *nick = NULL;
+        *user = NULL;
+        *host = NULL;
+
+        return;
+    }
+
+    *nick = prefix;
+    *cur++ = '\0';
+    *user = cur;
+
+    // See if the username is followed by a '@', meaning we have a host too.
+    if ((cur = strchr(cur, '@')) == NULL) {
+        *host = NULL;
+
+        return;
+    }
+
+    *cur = '\0';
+    *host = cur + 1;
+}
+
 // Extracts the prefix (if any), command, and parameters from the IRC message
 // in 'msg_str'.
 static bool split_msg(char *msg_str, IRC_msg *msg) {
@@ -97,6 +127,9 @@ static bool split_msg(char *msg_str, IRC_msg *msg) {
 
     if (!extract_msg_prefix(&cur, &msg->prefix))
         return false;
+
+    extract_prefix_components(msg->prefix, &msg->nick, &msg->user,
+                              &msg->host);
 
     if (!extract_msg_cmd(&cur, &msg->cmd))
         return false;
