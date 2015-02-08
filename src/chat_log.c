@@ -4,6 +4,9 @@
 
 #define CHAT_LOG_FILE "chat_log"
 
+static bool format_now(const char *format, char *buf, size_t buf_len)
+    __attribute__((format(strftime, 1, 0)));
+
 static bool format_now(const char *format, char *buf, size_t buf_len) {
     time_t now;
     struct tm now_tm;
@@ -30,7 +33,11 @@ static bool format_now(const char *format, char *buf, size_t buf_len) {
     return true;
 }
 
-void log_privmsg(const char *from, const char *to, const char *text) {
+static void log_append(const char *format, ...)
+    __attribute__((format(printf, 1, 2)));
+
+static void log_append(const char *format, ...) {
+    va_list ap;
     FILE *log_file;
     char time_str[64];
 
@@ -49,12 +56,53 @@ void log_privmsg(const char *from, const char *to, const char *text) {
         return;
     }
 
-    if (fprintf(log_file, "%s  %s  <%s> %s\n", time_str, to, from, text) < 0)
+    if (fprintf(log_file, "%s  ", time_str) < 0) {
         warning_err(PREFIX"fprintf() failed");
+
+        goto close_log;
+    }
+
+    va_start(ap, format);
+    if (vfprintf(log_file, format, ap) < 0) {
+        warning_err(PREFIX"vfprintf() failed");
+
+        goto close_log;
+    }
+
+    if (fputc('\n', log_file) == EOF)
+        warning_err(PREFIX"fputc() failed");
 
     #undef PREFIX
 
+close_log:
+    va_end(ap);
     if (fclose(log_file) == EOF)
-        warning_err("close() failed on chat log file "
-                    "('"CHAT_LOG_FILE"')");
+        warning_err("fclose() failed on chat log file ('"CHAT_LOG_FILE"')");
+}
+
+void log_join(const char *from, const char *channel) {
+    log_append("%s  %s joined", channel, from);
+}
+
+void log_kick(const char *from, const char *channel, const char *kickee,
+              const char *text) {
+    if (text == NULL)
+        log_append("%s  %s was kicked by %s", channel, kickee, from);
+    else
+        log_append("%s  %s was kicked by %s: %s", channel, kickee, from, text);
+}
+
+void log_part(const char *from, const char *channel) {
+    log_append("%s  %s left", channel, from);
+}
+
+void log_privmsg(const char *from, const char *to, const char *text) {
+    log_append("%s  <%s> %s", to, from, text);
+}
+
+void log_quit(const char *from, const char *text) {
+    if (text == NULL)
+        log_append("%s quit", from);
+    else
+        log_append("%s quit: %s", from, text);
 }
