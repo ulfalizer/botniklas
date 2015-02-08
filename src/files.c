@@ -132,7 +132,7 @@ FILE *open_file_stdio(const char *filename, Open_mode mode) {
 
     file = fdopen(fd, fdopen_mode);
     if (file == NULL) {
-        warning("fdopen() error on '%s'", filename);
+        warning_err("fdopen() error on '%s'", filename);
 
         return NULL;
     }
