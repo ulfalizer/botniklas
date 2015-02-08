@@ -14,20 +14,12 @@
 static void save_reminder(time_t when, const char *target,
                           const char *message) {
     FILE *remind_file;
-    int remind_file_fd;
 
     #define PREFIX "Failed to save reminder in '"REMINDERS_FILE"': "
 
-    remind_file_fd = open_file(REMINDERS_FILE, APPEND);
-    if (remind_file_fd == -1) {
-        warning(PREFIX"open_file() failed");
-
-        return;
-    }
-
-    remind_file = fdopen(remind_file_fd, "a");
+    remind_file = open_file_stdio(REMINDERS_FILE, APPEND);
     if (remind_file == NULL) {
-        warning_err(PREFIX"fd_open() failed");
+        warning_err(PREFIX"open_file_stdio() failed");
 
         return;
     }

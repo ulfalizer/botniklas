@@ -49,7 +49,7 @@ int open_file(const char *filename, Open_mode mode) {
     case READ: open_flags = O_RDONLY; break;
     case APPEND: open_flags = O_APPEND | O_CREAT | O_WRONLY; break;
     default: fail_exit("Internal error: Bad mode passed to "
-                       "open_data_dir_file().");
+                       "open_file().");
     }
 
     // Attempt to open the file.
@@ -112,6 +112,34 @@ fail:
     return -1;
 }
 
+FILE *open_file_stdio(const char *filename, Open_mode mode) {
+    int fd;
+    char *fdopen_mode;
+    FILE *file;
+
+    fd = open_file(filename, mode);
+    if (fd == -1)
+        return NULL;
+
+    // Map mode to fdopen() mode string.
+
+    switch (mode) {
+    case READ: fdopen_mode = "r"; break;
+    case APPEND: fdopen_mode = "a"; break;
+    default: fail_exit("Internal error: Bad mode passed to "
+                       "open_file_stdio().");
+    }
+
+    file = fdopen(fd, fdopen_mode);
+    if (file == NULL) {
+        warning("fdopen() error on '%s'", filename);
+
+        return NULL;
+    }
+
+    return file;
+}
+
 char *get_file_contents(const char *filename, size_t *len) {
     char *buf;
     int fd;
@@ -130,13 +158,13 @@ char *get_file_contents(const char *filename, size_t *len) {
     }
 
     if (S_ISDIR(fd_stat.st_mode)) {
-        warning("error while opening '%s': Is a directory", filename);
+        warning("Error while opening '%s': Is a directory", filename);
 
         goto err_close;
     }
 
     if (!S_ISREG(fd_stat.st_mode)) {
-        warning("error while opening '%s': Not a regular file", filename);
+        warning("Error while opening '%s': Not a regular file", filename);
 
         goto err_close;
     }

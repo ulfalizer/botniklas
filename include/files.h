@@ -13,6 +13,11 @@ typedef enum Open_mode {
 // exist.
 int open_file(const char *filename, Open_mode mode);
 
+// Like open_file(), but returns a stdio FILE* instead.
+//
+// Returns NULL on errors or if 'mode' is READ and the file does not exist.
+FILE *open_file_stdio(const char *filename, Open_mode mode);
+
 // Returns the contents of 'filename' inside the data directory. The length in
 // bytes is returned in 'len'. The caller free()s the returned buffer.
 //

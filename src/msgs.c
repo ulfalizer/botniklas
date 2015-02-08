@@ -1,4 +1,5 @@
 #include "common.h"
+#include "chat_log.h"
 #include "commands.h"
 #include "irc.h"
 #include "msg_io.h"
@@ -26,24 +27,29 @@ static void handle_ping(IRC_msg *msg) {
 }
 
 static void handle_privmsg(IRC_msg *msg) {
+    char *ex_mark;
+
+    // Ignore PRIVMSGs where the prefix is missing or we can't extract a
+    // nick from it.
+    if (msg->prefix == NULL ||
+        (ex_mark = strchr(msg->prefix, '!')) == NULL)
+        return;
+
+    // Truncate prefix to just nick.
+    *ex_mark = '\0';
+
+    log_privmsg(msg->prefix, msg->params[0], msg->params[1]);
+
+    // Look for bot command.
     if (msg->params[1][0] == '!') {
         char *arg;
-        char *ex_mark;
-
-        // Ignore PRIVMSGs where the prefix is missing or we can't extract a
-        // nick from it.
-        if (msg->prefix == NULL ||
-            (ex_mark = strchr(msg->prefix, '!')) == NULL)
-            return;
-
-        // Truncate prefix to just nick.
-        *ex_mark = '\0';
 
         // The argument, if any, starts after the first space. We also treat an
         // empty argument as "no argument" as there's probably no sensible use
         // case there.
         arg = strchr(msg->params[1], ' ');
         if (arg != NULL) {
+            // null-terminate command.
             *arg++ = '\0';
             if (*arg == '\0')
                 arg = NULL;
