@@ -130,7 +130,7 @@ void handle_remind(const char *arg, const char *rep) {
     now = time(NULL);
     if (now == -1) {
         warning_err("time() failed (add reminder)");
-        say(rep, "Failed to add reminder due to unexpected error.");
+        say(rep, "Failed to add reminder due to an unexpected error.");
 
         return;
     }
