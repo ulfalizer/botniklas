@@ -2,6 +2,7 @@
 #include "chat_log.h"
 #include "commands.h"
 #include "irc.h"
+#include "leet_monitor.h"
 #include "msg_io.h"
 #include "msgs.h"
 #include "options.h"
@@ -43,7 +44,10 @@ static void handle_ping(IRC_msg *msg) {
 }
 
 static void handle_privmsg(IRC_msg *msg) {
+    // TODO: Move to a separate events.c file when we get more of these. The
+    // command code could probably be moved too.
     log_privmsg(msg->nick, msg->params[0], msg->params[1]);
+    leet_monitor_privmsg(msg->nick, msg->params[0], msg->params[1]);
 
     // Look for bot command.
     if (msg->params[1][0] == '!') {

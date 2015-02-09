@@ -18,3 +18,9 @@ void handle_time_event(void);
 //
 // If 'when' has already passed, the function will be called ~immediately.
 void add_time_event(time_t when, void (*handler)(void *data), void *data);
+
+// Like add_time_event() but takes a struct tm.
+//
+// Returns false on errors.
+bool add_time_event_tm(struct tm *when, void (*handler)(void *data),
+                       void *data);

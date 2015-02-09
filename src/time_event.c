@@ -90,3 +90,18 @@ void add_time_event(time_t when, void (*handler)(void *data), void *data) {
     if (start == new)
         arm_timer(start);
 }
+
+bool add_time_event_tm(struct tm *when, void (*handler)(void *data),
+                       void *data) {
+    time_t t;
+
+    t = mktime(when);
+    if (t == -1) {
+        warning("mktime() failed (time event)");
+
+        return false;
+    }
+    add_time_event(t, handler, data);
+
+    return true;
+}

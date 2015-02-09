@@ -100,3 +100,22 @@ unsigned long long ge_pow_2(unsigned long long n) {
     // version.
     return n < 2 ? n : 1ULL << (CHAR_BIT*sizeof n - __builtin_clzll(n - 1));
 }
+
+bool get_current_time(struct tm *tm, const char *context) {
+    time_t now;
+
+    now = time(NULL);
+    if (now == -1) {
+        warning_err("time() failed (%s)", context);
+
+        return false;
+    }
+
+    if (localtime_r(&now, tm) == NULL) {
+        warning("localtime_r() failed (%s)", context);
+
+        return false;
+    }
+
+    return true;
+}

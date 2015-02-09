@@ -102,6 +102,11 @@ typedef unsigned char uc;
 // returning 0 for n = 0 (which makes sense given "doubling" semantics).
 unsigned long long ge_pow_2(unsigned long long n);
 
+// Returns the current time as a struct tm.
+//
+// Prints an error together with 'context' and returns false on errors.
+bool get_current_time(struct tm *tm, const char *context);
+
 //
 // Sockets-related
 //
