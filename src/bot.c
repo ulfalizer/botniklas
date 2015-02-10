@@ -20,17 +20,21 @@ static void init(void) {
     msg_read_buf_init();
     msg_write_buf_init();
 
-    // Block termination signals to prevent their default action...
+    // Handle termination signals (except for SIGABRT and SIGQUIT) with a
+    // signalfd...
     sigemptyset(&sig_mask);
     sigaddset(&sig_mask, SIGINT); // Ctrl-C
     sigaddset(&sig_mask, SIGTERM); // $ kill <bot>
-    if (sigprocmask(SIG_BLOCK, &sig_mask, NULL) == -1)
-        err_exit("sigprocmask");
-
-    // ...and handle them synchronously with a signalfd instead.
     signal_fd = signalfd(-1, &sig_mask, SFD_CLOEXEC);
     if (signal_fd == -1)
         err_exit("signalfd");
+
+    // ...and block them to prevent their default action. Also block SIGHUP and
+    // SIGPIPE since it's probably not useful to have the bot die for those.
+    sigaddset(&sig_mask, SIGHUP);
+    sigaddset(&sig_mask, SIGPIPE);
+    if (sigprocmask(SIG_BLOCK, &sig_mask, NULL) == -1)
+        err_exit("sigprocmask");
 
     // Create a timerfd to handle timer events synchronously.
     init_time_event();
@@ -146,11 +150,11 @@ again:
                 if (read(signal_fd, &si, sizeof si) == -1)
                     err_exit("read (signalfd)");
 
-                printf("Received signal '%s' - ", strsignal(si.ssi_signo));
+                printf("\nReceived signal '%s'. ", strsignal(si.ssi_signo));
                 if (first_signal)
-                    printf("sending QUIT message (\"%s\")\n", quit_message);
+                    printf("Sending QUIT message (\"%s\").\n", quit_message);
                 else
-                    puts("disconnecting");
+                    puts("Disconnecting.");
 
                 if (first_signal) {
                     write_msg("QUIT :%s", quit_message);
