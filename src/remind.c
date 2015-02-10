@@ -162,8 +162,26 @@ void handle_remind(const char *arg, const char *rep) {
     memcpy(reminder_data + target_len, cur, reminder_len);
 
     // Register callback.
-
     add_time_event(when, remind, reminder_data);
+
+    // Reply with confirmation.
+
+    time_t diff = when - now;
+    unsigned n_days = diff/(60*60*24);
+    unsigned n_hours = diff/(60*60)%24;
+    unsigned n_minutes = diff/60%60;
+    unsigned n_seconds = diff%60;
+
+    begin_say(rep);
+    append_msg("I will remind you in approx. ");
+    if (n_days != 0)
+        append_msg("%u day%s, ", n_days, n_days == 1 ? "" : "s");
+    if (n_hours != 0)
+        append_msg("%u hour%s, ", n_hours, n_hours == 1 ? "" : "s");
+    if (n_minutes != 0)
+        append_msg("%u minute%s, ", n_minutes, n_minutes == 1 ? "" : "s");
+    append_msg("%u second%s!", n_seconds, n_seconds == 1 ? "" : "s");
+    send_msg();
 }
 
 void restore_remind_state(void) {
