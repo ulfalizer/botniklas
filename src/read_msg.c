@@ -166,7 +166,7 @@ bool get_msg(char **msg) {
         switch (buf[cur]) {
         case '\r': case '\n':
             if (has_null_bytes) {
-                warning("ignoring invalid message containing null bytes: "
+                warning("Ignoring invalid message containing null bytes: "
                         "'%.*s'", (int)(cur - start), buf + start);
 
                 if (exit_on_invalid_msg)
