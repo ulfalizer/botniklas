@@ -80,6 +80,7 @@ static void handle_quit(IRC_msg *msg) {
 }
 
 static void handle_welcome(IRC_msg *msg) {
+    printf("Got RPL_WELCOME, joining %s\n", channel);
     write_msg("JOIN %s", channel);
 }
 

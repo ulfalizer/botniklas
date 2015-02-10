@@ -171,7 +171,10 @@ bool process_msgs(void) {
 
 void connect_to_irc_server(const char *host, const char *port, const char *nick,
                            const char *username, const char *realname) {
+    printf("Connecting to %s (port/service %s)\n", host, port);
     serv_fd = connect_to(host, port, SOCK_STREAM);
+    printf("Sending registration messages (nickname: %s, username: %s, "
+           "realname: '%s')\n", nick, username, realname);
 
     write_msg("NICK %s", nick);
     write_msg("USER %s 0 * :%s", username, realname);
