@@ -62,8 +62,9 @@ void process_cmdline(int argc, char *argv[]) {
         case 'h': print_usage(argv, stdout); exit(EXIT_SUCCESS);
         case 'm':
             if (strlen(optarg) != 1) {
-                fputs("command character must be a single character\n",
+                fputs("Command character must be a single character.\n\n",
                       stderr);
+                print_usage(argv, stderr);
                 exit(EXIT_FAILURE);
             }
             cmd_char = optarg[0];
@@ -76,18 +77,18 @@ void process_cmdline(int argc, char *argv[]) {
         case 'u': username = optarg; break;
 
         case '?':
-            fprintf(stderr, "unknown flag '-%c'.\n\n", optopt);
+            fprintf(stderr, "Unknown flag '-%c'.\n\n", optopt);
             print_usage(argv, stderr);
             exit(EXIT_FAILURE);
 
         case ':':
-            fprintf(stderr, "missing argument to '-%c'.\n\n", optopt);
+            fprintf(stderr, "Missing argument to '-%c'.\n\n", optopt);
             print_usage(argv, stderr);
             exit(EXIT_FAILURE);
         }
 
     if (argc - optind != 1) {
-        fputs("expected a single non-flag argument (the IRC server).\n\n",
+        fputs("Expected a single non-flag argument (the IRC server).\n\n",
               stderr);
         print_usage(argv, stderr);
         exit(EXIT_FAILURE);
