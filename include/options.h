@@ -1,5 +1,6 @@
 // Channel to join after registering with the server.
 extern const char *channel;
+extern char       cmd_char;
 extern const char *nick;
 extern const char *port;
 extern const char *quit_message;

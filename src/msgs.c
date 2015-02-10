@@ -50,7 +50,7 @@ static void handle_privmsg(IRC_msg *msg) {
     leet_monitor_privmsg(msg->nick, msg->params[0], msg->params[1]);
 
     // Look for bot command.
-    if (msg->params[1][0] == '!') {
+    if (msg->params[1][0] == cmd_char) {
         char *arg;
 
         // The argument, if any, starts after the first space. We also treat an
