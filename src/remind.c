@@ -1,4 +1,5 @@
 #include "common.h"
+#include "date.h"
 #include "files.h"
 #include "msg_io.h"
 #include "options.h"
@@ -57,53 +58,6 @@ static void remind(void *data) {
     free(target_and_reminder);
 }
 
-// Parses calendar time in the format "hh:mm:ss dd/MM yy", where yy is years
-// after 2000. Updates 'arg' to point just after the time, provided it's valid.
-//
-// Returns (time_t)-1 if the time format is invalid.
-//
-// TODO: Relax format and see if we can safely use sscanf().
-static time_t parse_time(const char **arg) {
-    struct tm when_tm;
-    const char *s = *arg;
-
-    if(!(// "hh:mm:ss "
-         isdigit(s[0]) && isdigit(s[1]) && s[2] == ':' &&
-         isdigit(s[3]) && isdigit(s[4]) && s[5] == ':' &&
-         isdigit(s[6]) && isdigit(s[7]) && s[8] == ' ' &&
-         // "dd/MM "
-         isdigit(s[9]) && isdigit(s[10]) && s[11] == '/' &&
-         isdigit(s[12]) && isdigit(s[13]) && s[14] == ' ' &&
-         // "yy"
-         isdigit(s[15]) && isdigit(s[16])))
-        return -1;
-
-    *arg += strlen("hh:mm:ss dd/MM yy");
-
-    when_tm.tm_hour  = 10*(s[0] - '0') + (s[1] - '0');
-    when_tm.tm_min   = 10*(s[3] - '0') + (s[4] - '0');
-    when_tm.tm_sec   = 10*(s[6] - '0') + (s[7] - '0');
-    when_tm.tm_mday  = 10*(s[9] - '0') + (s[10] - '0');
-    when_tm.tm_mon   = 10*(s[12] - '0') + (s[13] - '0') - 1;
-    when_tm.tm_year  = 100 + 10*(s[15] - '0') + (s[16] - '0');
-    when_tm.tm_isdst = -1; // Use DST information from locale.
-
-    // Do some crude sanity checking before passing the time on to mktime(). It
-    // should manage anyway (as fields are defined to overflow into one
-    // another), but just to be paranoid.
-    if (!(when_tm.tm_hour <= 23 &&
-          when_tm.tm_min <= 59 &&
-          when_tm.tm_sec <= 59 && // Disallow leap seconds. :P
-          when_tm.tm_mday >= 1 && when_tm.tm_mday <= 31 &&
-          when_tm.tm_mon >= 0 && when_tm.tm_mon <= 11 &&
-          // Don't allow times past year 2037 (around where a signed 32-bit
-          // time_t overflows) for now.
-          when_tm.tm_year <= 137))
-        return -1;
-
-    return mktime(&when_tm);
-}
-
 void handle_remind(const char *arg, const char *rep) {
     const char *cur;
     time_t now;
@@ -120,12 +74,26 @@ void handle_remind(const char *arg, const char *rep) {
 
     cur = arg;
 
-    when = parse_time(&cur);
+    when = parse_date(&cur);
     if (when == -1) {
-        say(rep, "Error: Time is too wonky. Be more straightforward.");
+        say(rep, "Error: Malformed or invalid time or date.");
 
         return;
     }
+
+    if (cur[0] != ' ') {
+        say(rep, "Error: Expected a space and the message after the time.");
+
+        return;
+    }
+
+    if (cur[1] == '\0') {
+        say(rep, "Error: Empty reminder message.");
+
+        return;
+    }
+
+    ++cur;
 
     now = time(NULL);
     if (now == -1) {
@@ -140,14 +108,6 @@ void handle_remind(const char *arg, const char *rep) {
 
         return;
     }
-
-    if (cur[0] == '\0' || cur[1] == '\0') {
-        say(rep, "Error: Missing or empty reminder message.");
-
-        return;
-    }
-
-    ++cur;
 
     // Save the reminder to the reminders file.
     save_reminder(when, rep, cur);

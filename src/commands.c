@@ -43,8 +43,9 @@ static const struct {
              CMD(help,
                  "Usage: !help <command>"),
              CMD(remind,
-                 "Usage: !remind hh:mm:ss dd/MM yy <text of reminder>. yy is "
-                 "nr. of years past 2000.") };
+                 "Usage: !remind hh:mm[:ss] [dd/MM [yy]] <text of reminder>. "
+                 "'yy' is nr. of years past 2000. Example: "
+                 "!remind 14:45 11/2 do your laundry foobar, you slob.") };
 
 static void commands(const char *from, const char *to, const char *rep,
                      const char *arg) {
