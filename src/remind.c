@@ -20,7 +20,7 @@ static void save_reminder(time_t when, const char *target,
 
     remind_file = open_file_stdio(REMINDERS_FILE, APPEND);
     if (remind_file == NULL) {
-        warning_err(PREFIX"open_file_stdio() failed");
+        warning(PREFIX"open_file_stdio() failed");
 
         return;
     }
