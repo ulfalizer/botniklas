@@ -152,6 +152,8 @@ void handle_msg(IRC_msg *msg) {
 
                 if (exit_on_invalid_msg)
                     exit(EXIT_FAILURE);
+
+                break;
             }
 
             msgs[i].handler(msg);
