@@ -151,17 +151,15 @@ again:
                     err_exit("read (signalfd)");
 
                 printf("\nReceived signal '%s'. ", strsignal(si.ssi_signo));
-                if (first_signal)
-                    printf("Sending QUIT message (\"%s\").\n", quit_message);
-                else
-                    puts("Disconnecting.");
-
                 if (first_signal) {
+                    printf("Sending QUIT message (\"%s\").\n", quit_message);
                     write_msg("QUIT :%s", quit_message);
                     first_signal = false;
                 }
-                else
+                else {
+                    puts("Disconnecting.");
                     goto done;
+                }
                 }
             }
         }
