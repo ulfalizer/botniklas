@@ -129,6 +129,7 @@ again:
                       events[i].events & EPOLLERR)
                     fail_exit("Got epoll error/weirdness related to timerfd. "
                               "Not sure what's going on. Bailing out.");
+
                 handle_time_event();
                 break;
 
