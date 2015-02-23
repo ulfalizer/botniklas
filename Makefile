@@ -6,8 +6,11 @@ headers := $(addprefix include/, commands.h chat_log.h common.h \
   date.h dynamic_string.h files.h irc.h leet_monitor.h msgs.h msg_io.h \
   options.h remind.h state.h time_event.h)
 
+warnings := -Wall -Wextra -Wno-sign-compare -Wno-unused-parameter \
+  -Wmissing-declarations -Wredundant-decls -Wstrict-prototypes
+
 bot: $(sources) $(headers)
-	gcc -std=gnu11 -O3 -flto -Wall -Wextra -Wno-sign-compare -Wno-unused-parameter -Wmissing-declarations -Wredundant-decls -Wstrict-prototypes -Iinclude -o $@ $(sources) -lrt
+	gcc -std=gnu11 -O3 -flto $(warnings) -Iinclude -o $@ $(sources) -lrt
 
 .PHONY: clean
 clean:
